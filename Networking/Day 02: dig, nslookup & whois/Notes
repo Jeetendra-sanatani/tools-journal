@@ -1,0 +1,49 @@
+==========================================
+NETWORKING DAY 02 NOTES — dig, nslookup & whois
+Date: 30-09-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- dig is the modern, detailed DNS lookup tool; +short strips it down to just the answer
+- A record = IP address, MX = mail servers, NS = nameservers, TXT = arbitrary text records
+- dig @<server> lets you query a SPECIFIC DNS server directly, bypassing your default one
+- dig -x does a reverse lookup: given an IP, find its hostname
+- nslookup is simpler/older but does the same basic job, still common on Windows
+- whois shows who actually OWNS a domain or IP block (registrar, dates, org info)
+
+COMMANDS I PRACTICED:
+[ ] dig <domain>  /  dig <domain> +short
+[ ] dig <domain> MX +short  /  dig <domain> NS +short
+[ ] dig @8.8.8.8 <domain> +short
+[ ] dig -x <ip> +short
+[ ] nslookup <domain>  /  nslookup -type=MX <domain>
+[ ] whois <domain>  /  whois <ip>
+
+paste your real output here :
+$ dig google.com +short
+> 
+
+$ dig google.com MX +short
+> 
+
+$ whois google.com   (registrar + creation date)
+> 
+
+
+MY OBSERVATIONS:
+- IP that google.com resolved to: 
+- Number of MX records returned: 
+- Did dig @8.8.8.8 give the same IP as my default lookup? 
+- Registrar for the domain I checked: 
+- Domain creation date: 
+- Organization owning the IP I checked with whois: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 03 — curl & wget
+==========================================
