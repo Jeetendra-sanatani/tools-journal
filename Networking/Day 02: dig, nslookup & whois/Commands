@@ -1,0 +1,42 @@
+==========================================
+NETWORKING DAY 02 — DIG, NSLOOKUP & WHOIS
+Commands Reference Sheet
+==========================================
+
+--- INSTALL (if missing) ---
+which dig nslookup whois
+sudo apt update && sudo apt install -y dnsutils whois
+
+--- DIG (detailed, preferred by most admins) ---
+dig <domain>                    # full DNS lookup, A record by default
+dig <domain> +short             # just the answer, no extra noise
+dig <domain> MX +short          # mail server records
+dig <domain> NS +short          # authoritative nameservers
+dig <domain> TXT +short         # text records (SPF, verification, etc.)
+dig <domain> ANY +short         # try to get all record types (many servers ignore ANY now)
+dig @8.8.8.8 <domain> +short    # query a SPECIFIC DNS server directly
+dig -x <ip> +short              # reverse lookup: IP -> hostname
+dig <domain> +trace             # trace the full resolution path from root servers
+
+--- NSLOOKUP (simpler, older, still common) ---
+nslookup <domain>                    # basic lookup
+nslookup -type=MX <domain>            # specific record type
+nslookup <domain> <dns-server-ip>      # query a specific server
+nslookup -type=NS <domain>              # nameserver records
+
+--- WHOIS (domain/IP ownership info) ---
+whois <domain>                   # registrar, creation date, nameservers, contact info
+whois <ip-address>                # which organization owns this IP block
+
+--- COMMON DNS RECORD TYPES ---
+A       # domain -> IPv4 address
+AAAA    # domain -> IPv6 address
+MX      # mail server(s) for the domain
+NS      # authoritative nameservers
+TXT     # arbitrary text (SPF, domain verification, DKIM)
+CNAME   # alias pointing to another domain name
+PTR     # reverse DNS (IP -> hostname)
+
+==========================================
+END OF NETWORKING DAY 02 COMMAND SHEET
+==========================================
