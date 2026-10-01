@@ -1,0 +1,50 @@
+==========================================
+NETWORKING DAY 03 NOTES — curl & wget
+Date: 01-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- curl prints the response to the terminal by default; wget saves it to a file by default
+- curl -I gets headers only - the fastest way to check if a site is up and what status it returns
+- curl -v shows the FULL process: DNS lookup, TCP connect, TLS handshake, then the request/response
+- curl -L follows redirects; without it, a redirect just shows as a 301/302 with no body
+- curl -s https://api.ipify.org is a quick way to find your public-facing IP address
+- wget is better suited to straightforward file downloads (progress bar, resumable with -c)
+
+COMMANDS YOU PRACTICED:
+[ ] curl <url>  /  curl -I <url>
+[ ] curl -v <url>
+[ ] curl -L <url>
+[ ] curl -o <file> <url>
+[ ] curl -s https://api.ipify.org
+[ ] wget <url> -O <file>
+
+paste your real output here :
+$ curl -I https://example.com
+> 
+
+$ curl -s https://api.ipify.org
+> 
+
+$ wget https://example.com -O test.html
+> 
+
+
+YOUR OBSERVATIONS:
+- HTTP status code I saw: 
+- My public IP: 
+- Did the redirect test (A4) actually redirect? 
+- wget vs curl default output - which difference stood out most: 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 04 — nmap part 1 (host discovery & basic scans)
+==========================================
