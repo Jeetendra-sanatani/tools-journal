@@ -1,0 +1,41 @@
+==========================================
+NETWORKING DAY 03 — CURL & WGET
+Commands Reference Sheet
+==========================================
+
+--- INSTALL (usually pre-installed) ---
+which curl wget
+sudo apt install -y curl wget
+
+--- CURL BASICS ---
+curl <url>                      # GET request, prints response body to terminal
+curl -I <url>                   # HEADERS ONLY, no body (fast status check)
+curl -v <url>                   # VERBOSE: full request + response + TLS handshake
+curl -L <url>                   # follow redirects automatically
+curl -o file.html <url>         # save output to a file (named file.html)
+curl -O <url>                   # save output, KEEPING the remote filename
+curl -s <url>                   # silent mode, no progress meter (good for scripting)
+curl -s -o /dev/null -w "%{http_code}\n" <url>   # print JUST the status code
+
+--- CURL WITH HEADERS/AUTH (good to know, not required today) ---
+curl -H "User-Agent: test" <url>           # send a custom header
+curl -u username:password <url>            # basic authentication
+
+--- WGET BASICS ---
+wget <url>                       # download, keep the remote filename, show progress
+wget <url> -O <filename>          # download, save with a specific name
+wget -q <url>                      # quiet mode, no progress bar
+wget --limit-rate=2m <url>          # cap download speed (2 MB/s here)
+wget -c <url>                        # resume an interrupted download
+
+--- FINDING YOUR PUBLIC IP (useful one-liner) ---
+curl -s https://api.ipify.org; echo
+curl -s https://ifconfig.me; echo
+
+--- CURL vs WGET, QUICK COMPARISON ---
+curl   -> prints to terminal by default, more flexible for APIs/headers/scripting
+wget   -> saves to a file by default, better for straightforward downloads, resumable
+
+==========================================
+END OF NETWORKING DAY 03 COMMAND SHEET
+==========================================
