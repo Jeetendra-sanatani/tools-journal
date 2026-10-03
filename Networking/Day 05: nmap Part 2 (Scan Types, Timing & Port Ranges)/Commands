@@ -1,0 +1,44 @@
+==========================================
+NETWORKING DAY 05 — NMAP PART 2
+Scan Types, Timing & Port Ranges
+==========================================
+
+--- SCAN TYPES ---
+sudo nmap -sS <target>        # SYN scan ("half-open") - default when run as root, stealthier
+nmap -sT <target>              # TCP Connect scan - full handshake, no root needed
+sudo nmap -sU <target>          # UDP scan - different protocol, much slower, less certain results
+sudo nmap -sU -p 53,161 <target> # UDP scan limited to specific ports (recommended - full UDP is very slow)
+
+--- TIMING TEMPLATES (speed vs stealth tradeoff) ---
+nmap -T0 <target>    # paranoid - extremely slow, for evading detection
+nmap -T1 <target>    # sneaky - very slow
+nmap -T2 <target>    # polite - slower, less bandwidth/load on target
+nmap -T3 <target>    # normal - the DEFAULT if you don't specify
+nmap -T4 <target>    # aggressive - faster, assumes a reliable fast network
+nmap -T5 <target>    # insane - fastest, may sacrifice accuracy
+
+--- MEASURING ACTUAL SCAN TIME ---
+time nmap -T2 -F <target>       # 'time' prefix shows real/user/sys time taken
+
+--- PORT SPECIFICATION ---
+nmap -p 22 <target>                  # single port
+nmap -p 21,22,25,80,443 <target>      # specific list
+nmap -p 1-100 <target>                 # range
+nmap -p 1-50,80,443,8080 <target>       # range + list combined
+nmap -p- <target>                        # ALL 65535 ports
+nmap --top-ports 20 <target>              # just the top N most common ports
+nmap -F <target>                           # shortcut for --top-ports 100
+
+--- SCAN TYPE COMPARISON ---
+-sS   SYN scan       needs root, stealthier (never completes TCP handshake)
+-sT   Connect scan   no root needed, completes full handshake (more "visible")
+-sU   UDP scan       slower, results often "open|filtered" (less certain than TCP)
+
+--- UDP RESULT STATES (different from TCP) ---
+open           -> got an actual response back
+open|filtered  -> no response at all; could be open with a silent service, or filtered - can't tell
+closed         -> got an ICMP "port unreachable" message back
+
+==========================================
+END OF NETWORKING DAY 05 COMMAND SHEET
+==========================================
