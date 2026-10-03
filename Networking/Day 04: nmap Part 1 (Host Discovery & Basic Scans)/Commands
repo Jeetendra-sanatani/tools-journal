@@ -1,0 +1,43 @@
+==========================================
+NETWORKING DAY 04 — NMAP PART 1
+Host Discovery & Basic Scans
+==========================================
+
+--- CHECK INSTALL ---
+which nmap
+nmap --version
+
+--- FINDING YOUR OWN NETWORK RANGE ---
+ip route | grep -v default          # shows your subnet, e.g. 192.168.80.0/24
+
+--- HOST DISCOVERY (find what's alive, no port scan) ---
+sudo nmap -sn 192.168.1.0/24        # ping-scan an entire subnet
+sudo nmap -sn 192.168.1.1-50        # ping-scan a specific IP range
+sudo nmap -sn 192.168.1.10 192.168.1.20   # ping-scan specific individual IPs
+
+--- BASIC PORT SCANS ---
+nmap <target>                        # default: top 1000 most common TCP ports
+nmap -F <target>                      # FAST scan: top 100 ports only
+nmap -p 22 <target>                    # scan ONE specific port
+nmap -p 22,80,443 <target>              # scan a LIST of specific ports
+nmap -p 1-100 <target>                   # scan a RANGE of ports
+nmap -p- <target>                         # scan ALL 65535 ports (slow)
+
+--- SAFE PRACTICE TARGETS ---
+localhost / 127.0.0.1                 # your own machine, always safe
+scanme.nmap.org                        # nmap project's official, publicly permitted target
+<your-own-local-subnet>                 # your own network only, e.g. 192.168.x.0/24
+
+--- READING THE OUTPUT ---
+PORT      STATE   SERVICE
+22/tcp    open    ssh
+80/tcp    closed  http
+53/tcp    filtered domain
+
+open      -> something is actively listening and responded
+closed    -> port reachable, but nothing is listening on it
+filtered  -> nmap couldn't tell; a firewall is likely blocking the probe
+
+==========================================
+END OF NETWORKING DAY 04 COMMAND SHEET
+==========================================
