@@ -1,0 +1,50 @@
+==========================================
+NETWORKING DAY 04 NOTES — nmap Part 1
+Date: 02-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- nmap -sn does HOST DISCOVERY only (who's alive), no port scanning at all
+- Default nmap scan checks the top 1000 most common TCP ports
+- -F (fast) checks only the top 100 ports - quicker, less thorough
+- -p lets you target specific ports, a list, a range, or -p- for ALL 65535
+- open = service listening, closed = reachable but nothing listening, filtered = firewall likely blocking
+- Only scan machines you own or that explicitly allow it (scanme.nmap.org, your own local network)
+
+COMMANDS I PRACTICED:
+[ ] ip route (finding my subnet)
+[ ] sudo nmap -sn <my-subnet>
+[ ] nmap localhost
+[ ] nmap scanme.nmap.org
+[ ] nmap -F scanme.nmap.org
+[ ] nmap -p 22 / -p 1-100 scanme.nmap.org
+
+paste your real output here :
+$ sudo nmap -sn <my-subnet>
+> 
+
+$ nmap localhost
+> 
+
+$ nmap scanme.nmap.org
+> 
+
+
+YOUR OBSERVATIONS:
+- Hosts found alive on my own network: 
+- Open ports on localhost: 
+- Open ports on scanme.nmap.org: 
+- Did -F find the same ports as the default scan? 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 05 — nmap Part 2 (scan types, speed, port ranges)
+==========================================
