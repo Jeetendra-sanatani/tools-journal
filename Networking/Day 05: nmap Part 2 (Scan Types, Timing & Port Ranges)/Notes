@@ -1,0 +1,50 @@
+==========================================
+NETWORKING DAY 05 NOTES — nmap Part 2
+Date: 03-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- -sS (SYN scan) needs root, never completes the full TCP handshake - stealthier, nmap's default as root
+- -sT (Connect scan) completes the full handshake, works without root, more "visible" to logging
+- -sU (UDP scan) is a different protocol entirely - slower, and results are often uncertain (open|filtered)
+- Timing templates T0 (paranoid/slowest) through T5 (insane/fastest) trade speed for stealth/accuracy
+- T3 is the default if you don't specify a timing template
+- --top-ports N lets you pick exactly how many common ports to check, -F is shorthand for top 100
+- A slower scan generates less traffic and fewer alerts - this is WHY real attackers sometimes go slow on purpose
+
+COMMANDS YOU PRACTICED:
+[ ] sudo nmap -sS <target>  vs  nmap -sT <target>
+[ ] sudo nmap -sU -p <ports> <target>
+[ ] nmap -T2 vs nmap -T4 (with 'time' to measure)
+[ ] nmap -p <list>,<range> <target>
+[ ] nmap --top-ports 20 <target>
+
+MY OWN OUTPUT (paste your real output here):
+$ sudo nmap -sS scanme.nmap.org
+> 
+
+$ sudo nmap -sU -p 53,67,123,161 scanme.nmap.org
+> 
+
+$ time nmap -T4 -F scanme.nmap.org
+> 
+
+
+YOUR OBSERVATIONS:
+- Did -sS and -sT find the same ports? 
+- UDP scan result states I saw: 
+- Time difference between T2 and T4: 
+- Did --top-ports 20 differ from -F (top 100)? 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+ 
+
+TOMORROW'S TOPIC: Networking Day 06 — nmap Part 3 (service & OS detection)
+==========================================
