@@ -1,0 +1,29 @@
+==========================================
+NETWORKING DAY 06 — NMAP PART 3
+Service & OS Detection
+==========================================
+
+--- SERVICE / VERSION DETECTION ---
+nmap -sV <target>                        # detect actual service + version (not just a port guess)
+nmap -sV --version-intensity 0 <target>   # fastest, least thorough (0-9 scale)
+nmap -sV --version-intensity 9 <target>    # slowest, most thorough
+nmap -sV --version-light <target>           # shortcut for low intensity
+nmap -sV --version-all <target>              # shortcut for max intensity (try every probe)
+
+--- OS DETECTION ---
+sudo nmap -O <target>                    # guess the target's operating system (needs root)
+sudo nmap -O --osscan-guess <target>      # be more aggressive about guessing when unsure
+
+--- COMBINED / AGGRESSIVE SCAN ---
+sudo nmap -A <target>                     # OS detection + version detection + scripts + traceroute, all at once
+sudo nmap -A -p 22,80,443 <target>         # same, but limited to specific ports (faster, more focused)
+
+--- MANAGING A STUCK/SLOW SCAN (lesson from Day 05) ---
+# Ctrl+Z          -> suspends the job (doesn't kill it)
+jobs               # list suspended/background jobs
+kill %1              # properly kill job number 1 (check with 'jobs' first)
+fg                     # bring a suspended job back to the foreground
+
+==========================================
+END OF NETWORKING DAY 06 COMMAND SHEET
+==========================================
