@@ -1,0 +1,31 @@
+==========================================
+NETWORKING DAY 07 — NMAP PART 4
+NSE Scripts & Saving Output
+==========================================
+
+--- NSE (NMAP SCRIPTING ENGINE) BASICS ---
+nmap -sC <target>                      # run the default SAFE script set
+nmap -sV -sC <target>                   # version detection + default scripts together
+nmap --script=<script-name> <target>     # run ONE specific named script
+nmap --script=banner -p 22 <target>       # example: grab a service banner
+nmap --script=http-title -p 80 <target>    # example: grab a web page's <title>
+nmap --script "http-*" <target>             # run ALL scripts matching a wildcard pattern (can be slow)
+
+--- FINDING AVAILABLE SCRIPTS ---
+ls /usr/share/nmap/scripts/                   # see every script installed
+ls /usr/share/nmap/scripts/ | grep -i http     # filter by keyword (e.g. http-related scripts)
+nmap --script-help=banner                       # read what a specific script does
+
+--- SAVING OUTPUT ---
+nmap <target> -oN output.txt            # Normal format - same as terminal output, saved to a file
+nmap <target> -oX output.xml             # XML format - meant for OTHER TOOLS to parse programmatically
+nmap <target> -oG output.gnmap            # Grepable format - one line per host, easy for grep/awk
+nmap <target> -oA basename                  # ALL THREE formats at once (basename.nmap/.xml/.gnmap)
+
+--- A PRACTICAL COMBINED RECON SCAN ---
+nmap -sV -sC -F <target> -oN recon.txt
+   # -sV: real versions, -sC: default safe scripts, -F: top 100 ports, saved to a readable file
+
+==========================================
+END OF NETWORKING DAY 07 COMMAND SHEET
+==========================================
