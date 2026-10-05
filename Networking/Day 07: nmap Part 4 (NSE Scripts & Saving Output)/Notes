@@ -1,0 +1,49 @@
+==========================================
+NETWORKING DAY 07 NOTES — nmap Part 4
+Date: 05-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- NSE (Nmap Scripting Engine) runs extra scripts against open ports for deeper info
+- -sC runs the DEFAULT set of safe scripts; --script=<name> runs one specific script
+- Scripts live in /usr/share/nmap/scripts/ - hundreds are installed by default
+- -oN saves normal (readable) output, -oX saves XML (for other tools), -oA saves all formats at once
+- XML output isn't meant for humans to read directly - it's structured for other programs to parse
+- A combined -sV -sC -F scan, saved with -oN, is a realistic "first pass" recon command
+
+COMMANDS I PRACTICED:
+[ ] nmap -sV -sC -p <ports> <target>
+[ ] nmap --script=banner -p 22 <target>
+[ ] nmap --script=http-title -p 80 <target>
+[ ] nmap <target> -oN / -oX / -oA
+[ ] a combined recon-style scan
+
+paste your real output here :
+$ nmap -sV -sC -p 22,80 scanme.nmap.org
+> 
+
+$ nmap --script=http-title -p 80 scanme.nmap.org
+> 
+
+$ nmap -sV -sC -F scanme.nmap.org -oN final_recon.txt
+> 
+
+
+YOUR OBSERVATIONS:
+- Extra info -sC added beyond plain -sV: 
+- What http-title returned: 
+- Files created by -oA (list the extensions): 
+- Was the XML output human-readable or clearly for a program? 
+
+CHALLENGES — MY ANSWERS:
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 08 — netcat Part 1 (port testing & banner grabbing)
+==========================================
