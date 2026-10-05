@@ -1,0 +1,47 @@
+==========================================
+NETWORKING DAY 06 NOTES — nmap Part 3
+Date: 04-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- -sV actually probes a port and checks the response, instead of just guessing from the port number
+- --version-intensity (0-9) trades speed for thoroughness when detecting versions
+- -O guesses the operating system based on subtle quirks in how the TCP/IP stack responds - never 100% certain
+- -A combines OS detection + version detection + NSE scripts + traceroute into one scan - thorough but slow/noisy
+- A stuck scan can be suspended (Ctrl+Z) then properly killed (kill %1) rather than left dangling - lesson from Day 05
+
+COMMANDS I PRACTICED:
+[ ] nmap -sV 127.0.0.1 / nmap -sV scanme.nmap.org
+[ ] nmap -sV --version-intensity 2 scanme.nmap.org
+[ ] sudo nmap -O 127.0.0.1 / sudo nmap -O scanme.nmap.org
+[ ] sudo nmap -A -p 22,80 scanme.nmap.org
+
+paste your real output here :
+$ nmap -sV scanme.nmap.org
+> 
+
+$ sudo nmap -O scanme.nmap.org
+> 
+
+$ sudo nmap -A -p 22,80 scanme.nmap.org
+> 
+
+
+YOUR OBSERVATIONS:
+- Service/version info -sV found that a plain scan didn't: 
+- OS guess confidence (percentages or a clear answer?): 
+- Extra info -A gave beyond -sV/-O alone: 
+- Did I need to suspend/kill any scan this time? 
+
+CHALLENGES — MY ANSWERS:
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 07 — nmap Part 4 (NSE scripts & saving output)
+==========================================
