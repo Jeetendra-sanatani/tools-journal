@@ -1,0 +1,37 @@
+==========================================
+NETWORKING DAY 08 — NETCAT PART 1
+Port Testing & Banner Grabbing
+==========================================
+
+--- CHECK INSTALL ---
+which nc
+sudo apt install -y ncat          # or: netcat-traditional
+
+--- TESTING IF A PORT IS OPEN (connect mode) ---
+nc -zv <host> <port>              # -z = scan, don't send data; -v = verbose
+nc -zv <host> 20-30                # test a RANGE of ports
+nc -zv -w 2 <host> <port>           # -w 2 = give up after 2 seconds (avoid hanging)
+
+--- BANNER GRABBING ---
+nc -v <host> <port>                       # connect and see whatever the service announces first
+printf "GET / HTTP/1.1\r\nHost: <host>\r\nConnection: close\r\n\r\n" | nc -v <host> 80
+   # manually send a raw HTTP request, see the raw response headers + body
+
+--- RUNNING A LOCAL LISTENER (own machine / own lab only) ---
+nc -lvnp <port>                    # -l = listen, -v = verbose, -n = no DNS lookups, -p = port
+                                    # example: nc -lvnp 4444
+
+--- CONNECTING TO YOUR OWN LISTENER ---
+nc -v 127.0.0.1 <port>              # connect to a listener running on your own machine
+
+--- FLAG MEANINGS ---
+-z    scan only, don't send/receive actual data (used for port testing)
+-v    verbose - show what's happening
+-n    skip DNS resolution (faster, avoids unnecessary lookups)
+-l    listen mode (become a server, wait for a connection)
+-p    specify the port to use
+-w    timeout in seconds before giving up
+
+==========================================
+END OF NETWORKING DAY 08 COMMAND SHEET
+==========================================
