@@ -1,0 +1,47 @@
+==========================================
+NETWORKING DAY 08 NOTES — netcat Part 1
+Date: 06-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- nc -zv tests if a port is open without actually sending/exchanging real data (-z = scan only)
+- Banner grabbing: just connecting (nc -v host port) often shows what a service announces itself as
+- A raw HTTP request can be sent manually through netcat using printf piped into nc - no browser needed
+- nc -lvnp <port> turns your own machine into a listener (a basic server) on that port
+- netcat works both ways: as a client (connecting out) and as a server (listening for connections in)
+- Listeners should ONLY ever run on your own machine or your own isolated lab network
+
+COMMANDS I PRACTICED:
+[ ] nc -zv <host> <port>  (single port and a range)
+[ ] nc -v <host> 22  (SSH banner grab)
+[ ] printf ... | nc -v <host> 80  (manual HTTP request)
+[ ] nc -lvnp 4444  (local listener) + nc -v 127.0.0.1 4444  (connecting to it)
+
+paste your real output here :
+$ nc -zv scanme.nmap.org 22
+> 
+
+$ nc -v scanme.nmap.org 22  (banner)
+> 
+
+$ printf "GET / HTTP/1.1\r\nHost: scanme.nmap.org\r\nConnection: close\r\n\r\n" | nc -v scanme.nmap.org 80
+> 
+
+
+YOUR OBSERVATIONS:
+- Did the SSH banner match what nmap -sV found on Day 06? 
+- First few HTTP response headers seen in B2: 
+- Did the local listener test (Part C) work both directions? 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 09 — netcat Part 2 (listener, simple file transfer - lab only)
+==========================================
