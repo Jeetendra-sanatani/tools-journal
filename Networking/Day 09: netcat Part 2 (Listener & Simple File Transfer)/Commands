@@ -1,0 +1,28 @@
+==========================================
+NETWORKING DAY 09 — NETCAT PART 2
+Listener & Simple File Transfer
+==========================================
+
+--- SHELL-STYLE LISTENER (educational, LOCAL ONLY) ---
+nc -lvnp 4444                       # listener waiting for a connection
+nc 127.0.0.1 4444 -e /bin/bash       # pipe a shell into the connection (if -e is supported)
+                                     # many modern nc builds disable -e on purpose (abuse risk)
+
+--- SIMPLE FILE TRANSFER ---
+nc -lvnp 4444 > received_file.txt    # receiver: save whatever comes in to a file
+nc 127.0.0.1 4444 < test_file.txt     # sender: pipe a file's contents into the connection
+
+--- BASIC TWO-WAY CHAT / PIPE TEST ---
+nc -lvnp 5555                        # listener
+nc 127.0.0.1 5555                     # connect, then type messages back and forth
+
+--- WHY THIS MATTERS FOR SECURITY ---
+A netcat listener + a piped shell is the same basic mechanism behind a "reverse shell" -
+one of the most common post-exploitation techniques. Understanding it defensively means
+recognizing: unexpected outbound connections, unusual listening ports, and processes
+spawning shells unexpectedly (all things covered in earlier Linux journal days: ss -tuln,
+ps aux, auth.log analysis).
+
+==========================================
+END OF NETWORKING DAY 09 COMMAND SHEET
+==========================================
