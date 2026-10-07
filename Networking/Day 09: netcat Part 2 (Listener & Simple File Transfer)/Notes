@@ -1,0 +1,42 @@
+==========================================
+NETWORKING DAY 09 NOTES — netcat Part 2
+Date: 07-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- nc -lvnp <port> -e /bin/bash pipes a shell through the connection (if -e is supported)
+- Many modern netcat builds deliberately REMOVE -e because of its abuse potential (reverse shells)
+- File transfer via netcat: receiver redirects (>) to a file, sender redirects (<) a file in
+- This method has NO integrity check, no resume, no encryption - unlike scp/rsync (Day 20 of Linux journal)
+- The basic listener + connect mechanism (Day 08 Part C) is the foundation both file transfer and shells build on
+- Recognizing netcat-style listeners/reverse shells defensively ties back to ss -tuln, ps aux, auth.log
+
+COMMANDS I PRACTICED:
+[ ] nc -lvnp 4444 -e /bin/bash  (or noting it's unsupported)
+[ ] nc -lvnp 4444 > file  /  nc host 4444 < file  (file transfer)
+[ ] nc -lvnp 5555  +  nc 127.0.0.1 5555  (two-way chat)
+
+paste your real output here :
+$ nc 127.0.0.1 4444 -e /bin/bash  (worked, or error message?)
+> 
+
+$ cat received_file.txt  (did it match the original?)
+> 
+
+
+YOUR OBSERVATIONS:
+- Did -e work on this netcat build? 
+- Did the transferred file match exactly? 
+- What's missing compared to scp/rsync? 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+TOMORROW'S TOPIC: Networking Day 10 — tcpdump Part 1 (packet capture basics)
+==========================================
