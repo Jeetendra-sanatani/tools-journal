@@ -1,0 +1,40 @@
+==========================================
+NETWORKING DAY 10 — TCPDUMP PART 1
+Packet Capture Basics
+==========================================
+
+--- CHECK INSTALL & FIND INTERFACE ---
+which tcpdump
+ip addr                               # find interface names (eth0, wlan0, etc.)
+sudo tcpdump --list-interfaces         # tcpdump's own view of available interfaces
+
+--- BASIC LIVE CAPTURE ---
+sudo tcpdump -i eth0                  # capture live, runs until Ctrl+C
+sudo tcpdump -i eth0 -c 10             # capture exactly 10 packets, then stop
+sudo tcpdump -i eth0 -c 10 -n           # -n = don't resolve hostnames/ports to names (faster, raw)
+
+--- MORE DETAIL ---
+sudo tcpdump -i eth0 -c 5 -A            # show packet contents in ASCII (readable text, if any)
+sudo tcpdump -i eth0 -c 5 -v              # increase verbosity (more header detail)
+sudo tcpdump -i eth0 -c 5 -vv              # even more verbose
+sudo tcpdump -i eth0 -c 5 -X                 # show both hex AND ASCII side by side
+
+--- SAVING AND READING CAPTURES ---
+sudo tcpdump -i eth0 -c 20 -w capture.pcap    # save raw packets to a file (not printed to screen)
+tcpdump -r capture.pcap                        # read back a saved capture (no sudo needed to read)
+file capture.pcap                               # confirm it's a real pcap capture file
+ls -lh capture.pcap                              # check file size
+
+--- QUICK FLAG REFERENCE ---
+-i <iface>   which network interface to listen on
+-c <n>       capture exactly n packets then stop
+-n           don't resolve names (faster, clearer for analysis)
+-A           show packet payload as ASCII text
+-v / -vv     increase verbosity
+-X           show hex + ASCII together
+-w <file>    write raw capture to a file instead of printing
+-r <file>    read a previously saved capture file
+
+==========================================
+END OF NETWORKING DAY 10 COMMAND SHEET
+==========================================
