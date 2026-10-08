@@ -1,0 +1,50 @@
+==========================================
+NETWORKING DAY 10 NOTES — tcpdump Part 1
+Date: 08-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- tcpdump captures raw packets passing through a network interface, live
+- -c <n> limits capture to exactly n packets, then stops automatically
+- -n skips hostname/port name resolution - faster and often clearer for analysis
+- -A shows packet payload as readable ASCII text (great for seeing plain-text protocols like HTTP)
+- -v/-vv add more header detail per packet
+- -w saves raw packets to a .pcap file; -r reads one back
+- A .pcap file is a specific binary format, not plain text - meant for tools like tcpdump/Wireshark
+
+COMMANDS I PRACTICED:
+[ ] ip addr  (finding my interface)
+[ ] sudo tcpdump -i eth0 -c 10  /  -c 10 -n
+[ ] sudo tcpdump -i eth0 -c 5 -A  /  -v
+[ ] sudo tcpdump -i eth0 -c 20 -w capture.pcap
+[ ] tcpdump -r capture.pcap
+
+paste your real output here :
+$ sudo tcpdump -i eth0 -c 10 -n
+> 
+
+$ sudo tcpdump -i eth0 -c 5 -A
+> 
+
+$ sudo tcpdump -i eth0 -c 20 -w capture.pcap  +  tcpdump -r capture.pcap
+> 
+
+
+YOUR OBSERVATIONS:
+- My interface name: 
+- What one tcpdump line actually shows (source, dest, flags): 
+- Could I read plain text in the -A output? 
+- What file command said about capture.pcap: 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 11 — tcpdump Part 2 (filters: host, port, protocol)
+==========================================
