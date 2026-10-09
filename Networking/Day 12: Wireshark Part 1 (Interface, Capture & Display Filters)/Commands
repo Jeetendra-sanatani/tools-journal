@@ -1,0 +1,67 @@
+==========================================
+NETWORKING DAY 12 — WIRESHARK PART 1
+Interface, Capture & Display Filters
+==========================================
+
+--- STARTING WIRESHARK ---
+wireshark &                          # launch the GUI from a terminal
+sudo wireshark &                      # if a real interface gives a permission error
+sudo usermod -aG wireshark $USER       # permanent fix (log out and back in afterwards)
+
+--- LOCAL TEST SERVER (safe traffic source) ---
+python3 -m http.server 8080            # Terminal 1: tiny web server on your own machine
+curl -s http://127.0.0.1:8080/ > /dev/null    # Terminal 3: generate a request to capture
+
+--- CAPTURING (GUI) ---
+Start screen -> double-click an interface   # Loopback: lo for local traffic, eth0 for your real network
+Red square button                            # stop the capture
+File -> Save As -> name.pcapng                # save the capture
+File -> Open                                   # reopen a saved capture
+tcpdump -r name.pcapng -n                       # read the same file from the command line (Day 10)
+
+--- THE THREE PANES ---
+Packet List      one line per packet (time, source, destination, protocol, info)
+Packet Details   the selected packet broken into layers (Frame, Ethernet, IP, TCP, HTTP...)
+Packet Bytes     the raw bytes, hex on one side and ASCII on the other
+
+--- DISPLAY FILTERS (typed in the filter bar, applied AFTER capture) ---
+tcp.port == 8080                       # TCP traffic on port 8080 (either direction)
+tcp.dstport == 8080                     # only packets going TO port 8080
+tcp.srcport == 8080                      # only packets coming FROM port 8080
+udp.port == 53                            # DNS over UDP
+ip.addr == 192.168.80.136                  # to or from that IP
+ip.src == 1.1.1.1  /  ip.dst == 1.1.1.1      # one direction only
+http                                          # HTTP packets only
+dns                                            # DNS packets only
+icmp                                            # ping packets only
+arp                                              # ARP packets only
+http.request.method == "GET"                      # only GET requests
+http.response.code == 200                          # only 200 OK responses
+tcp.flags.syn == 1                                  # packets with the SYN flag set (SYN and SYN-ACK)
+tcp.flags.syn == 1 && tcp.flags.ack == 0             # only the first SYN of a handshake
+tcp.flags.reset == 1                                  # resets (refused connections)
+frame contains "GET"                                   # packets containing that text anywhere
+
+--- COMBINING DISPLAY FILTERS ---
+&&   (or "and")      both must match         http && tcp.port == 8080
+||   (or "or")       either matches           icmp || dns
+!    (or "not")      exclude                   !arp     !(ip.addr == 192.168.80.2)
+
+--- FILTER BAR COLOURS ---
+green   valid filter
+red     invalid filter (check spelling / syntax)
+yellow  valid but possibly not what you meant
+
+--- CAPTURE FILTER vs DISPLAY FILTER ---
+Capture filter   set BEFORE capturing, same BPF syntax as tcpdump (port 8080, host 1.1.1.1);
+                 packets that don't match are never saved
+Display filter   typed AFTER capturing, Wireshark's own syntax (tcp.port == 8080);
+                 packets that don't match are only hidden, still in the file
+
+--- QUICK TRICK ---
+Right-click any field in the packet details pane -> Apply as Filter -> Selected
+   # builds the correct filter for you from a value you clicked on
+
+==========================================
+END OF NETWORKING DAY 12 COMMAND SHEET
+==========================================
