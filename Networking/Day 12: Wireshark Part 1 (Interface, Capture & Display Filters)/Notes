@@ -1,0 +1,54 @@
+==========================================
+NETWORKING DAY 12 NOTES — Wireshark Part 1
+Date: 09-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- Wireshark is the GUI version of what tcpdump does: it captures packets on an interface and decodes them
+- The window has three panes: packet list, packet details (layer by layer), packet bytes (hex + ASCII)
+- Loopback (lo) carries traffic from my machine to itself; eth0 carries traffic on my real network
+- A display filter hides packets AFTER capture (still in the file); a capture filter stops them being saved at all
+- Display filter syntax is Wireshark's own (tcp.port == 8080), not the BPF syntax tcpdump uses
+- tcp.flags.syn == 1 matches both SYN and SYN-ACK packets; adding && tcp.flags.ack == 0 leaves only the first SYN
+- The packet details pane shows request/response fields directly (Host, User-Agent, Server, Content-Length, Time since request)
+- Wireshark saves .pcapng; tcpdump can read it with -r
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] capture on Loopback: lo while curl-ing my local server
+[ ] save the capture as .pcapng
+[ ] display filters: tcp.port == 8080, http, http && tcp.port == 8080
+[ ] display filters: tcp.flags.syn == 1 (with and without ack == 0)
+[ ] expand the request and response packets in the details pane
+[ ] capture on eth0, filter icmp || dns
+
+describe or paste what you saw :
+Filter: tcp.port == 8080  ->  Displayed: ___ of ___
+> 
+
+Filter: http && tcp.port == 8080  ->  Displayed: ___ of ___
+> 
+
+Filter: tcp.flags.syn == 1  ->  Displayed: ___ of ___
+> 
+
+
+YOUR OBSERVATIONS:
+- Packets for 3 curl requests (total / per request): 
+- Request fields (Host, User-Agent, ports): 
+- Response fields (Server, Content-Length, Time since request): 
+- ICMP packets from 4 pings: 
+- DNS packets from dig: 
+- Other traffic that appeared on eth0: 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 13 — Wireshark Part 2 (Follow TCP Stream, reading DNS & HTTP)
+==========================================
