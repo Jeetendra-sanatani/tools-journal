@@ -1,0 +1,49 @@
+==========================================
+NETWORKING DAY 11 — TCPDUMP PART 2
+Filters: host, port, protocol
+==========================================
+
+--- LOCAL TEST SERVER (safe traffic source) ---
+python3 -m http.server 8080              # Terminal 1: tiny web server on your own machine
+curl -s http://127.0.0.1:8080/ > /dev/null   # Terminal 3: generate a request to capture
+
+--- FILTER BY PORT ---
+sudo tcpdump -i lo -n port 8080           # traffic on port 8080 (either direction)
+sudo tcpdump -i eth0 -n port 53            # DNS traffic
+sudo tcpdump -i eth0 -n src port 443        # packets coming FROM port 443
+sudo tcpdump -i eth0 -n dst port 80          # packets going TO port 80
+
+--- FILTER BY PROTOCOL ---
+sudo tcpdump -i lo -n tcp                  # TCP only
+sudo tcpdump -i lo -n udp                   # UDP only
+sudo tcpdump -i lo -n icmp                   # ICMP only (ping)
+
+--- FILTER BY HOST AND DIRECTION ---
+sudo tcpdump -i eth0 -n host 1.1.1.1          # to OR from that host
+sudo tcpdump -i eth0 -n dst host 1.1.1.1       # only packets going TO it
+sudo tcpdump -i eth0 -n src host 1.1.1.1        # only packets coming FROM it
+sudo tcpdump -i eth0 -n net 192.168.80.0/24      # a whole subnet
+
+--- COMBINING FILTERS ---
+sudo tcpdump -i lo -n 'tcp and port 8080'          # AND: both must match
+sudo tcpdump -i eth0 -n 'icmp or port 53'           # OR: either matches
+sudo tcpdump -i eth0 -n 'not port 22'                # NOT: exclude (hides your own SSH session)
+sudo tcpdump -i eth0 -n 'host 1.1.1.1 and not icmp'   # mix them freely
+   # tip: wrap multi-word filters in quotes so the shell doesn't misread them
+
+--- SAVE WITH A FILTER, READ IT BACK ---
+sudo tcpdump -i lo -n port 8080 -c 12 -w http8080.pcap     # capture only matching packets to a file
+tcpdump -r http8080.pcap -n                                  # read it back
+tcpdump -r http8080.pcap -n 'tcp[tcpflags] & tcp-syn != 0'    # filter the SAVED file: only SYN packets
+
+--- READING TCP FLAGS IN THE OUTPUT ---
+[S]    SYN             connection request
+[S.]   SYN-ACK          connection accepted
+[.]    ACK               acknowledgement
+[P.]   PSH-ACK            data being pushed (e.g. an HTTP request/response)
+[F.]   FIN-ACK             connection closing
+[R]    RST                 connection reset/refused
+
+==========================================
+END OF NETWORKING DAY 11 COMMAND SHEET
+==========================================
