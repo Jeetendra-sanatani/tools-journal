@@ -1,0 +1,52 @@
+==========================================
+NETWORKING DAY 11 NOTES — tcpdump Part 2
+Date: 09-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- tcpdump filters (BPF syntax) decide WHICH packets get captured, so output isn't a firehose
+- port <n>, tcp / udp / icmp, and host <ip> are the three building blocks
+- src and dst narrow a filter to one direction only
+- and / or / not combine filters; quote multi-word filters so the shell leaves them alone
+- 'not port 22' is the classic filter to hide your own SSH session while capturing
+- A filter used with -w only SAVES matching packets; a filter used with -r filters an existing file
+- TCP flags in output: [S] SYN, [S.] SYN-ACK, [.] ACK, [P.] data, [F.] FIN, [R] reset
+
+COMMANDS I PRACTICED:
+[ ] tcpdump -i lo -n port 8080
+[ ] tcpdump -i lo -n icmp
+[ ] tcpdump -i eth0 -n host / dst host / src host
+[ ] tcpdump -i lo -n 'tcp and port 8080' -A
+[ ] tcpdump -i eth0 -n 'not port 22'  /  'icmp or port 53'
+[ ] tcpdump -w with a filter, then -r with a second filter
+
+paste your real output here :
+$ sudo tcpdump -i lo -n port 8080 -c 10
+> 
+
+$ sudo tcpdump -i eth0 -n dst host 1.1.1.1 -c 4
+> 
+
+$ sudo tcpdump -i lo -n 'tcp and port 8080' -c 10 -A
+> 
+
+
+YOUR OBSERVATIONS:
+- Did I see the SYN / SYN-ACK / ACK handshake in A1? 
+- Why does each ping show as two lines? 
+- B1 vs B2 vs B3 packet counts: 
+- Could I read the HTTP request in plain text with -A? 
+- Number of SYN packets in the saved file: 
+
+CHALLENGES — MY ANSWERS:
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 12 — Wireshark Part 1 (interface, capture, display filters)
+==========================================
