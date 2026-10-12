@@ -1,0 +1,62 @@
+==========================================
+NETWORKING DAY 13 — WIRESHARK PART 2
+Follow TCP Stream, Reading HTTP & DNS
+==========================================
+
+--- OPENING A SAVED CAPTURE ---
+File -> Open -> basic_capture.pcapng
+wireshark basic_capture.pcapng &            # open it straight from the terminal
+
+--- FOLLOW A STREAM ---
+Right-click a packet -> Follow -> TCP Stream     # rebuild the whole conversation as readable text
+Ctrl+Alt+Shift+T                                  # shortcut for Follow TCP Stream
+   red text   = client -> server
+   blue text  = server -> client
+   "Show data as" dropdown: ASCII / Hex Dump / Raw
+   "Entire conversation" dropdown: pick one direction only
+tcp.stream eq 0                                    # filter Wireshark applies automatically (try 1, 2, ...)
+
+--- HTTP DISPLAY FILTERS ---
+http                                              # all HTTP packets
+http.request                                       # only requests
+http.response                                       # only responses
+http.request.method == "GET"                         # only GET requests
+http.response.code == 200                             # only 200 OK responses
+http.user_agent contains "curl"                        # requests sent by curl
+http.host == "127.0.0.1:8080"                           # by Host header
+http.server contains "Python"                            # responses from a Python server
+
+--- EXPORTING A FILE FROM A CAPTURE ---
+File -> Export Objects -> HTTP...                  # list files carried over plain HTTP
+   select an entry -> Save                           # rebuild it from the capture
+ls -l exported_page.html                              # compare size with Content-Length in the response
+
+--- DNS DISPLAY FILTERS ---
+dns                                                # all DNS packets
+dns.qry.name == "google.com"                        # lookups for one name
+dns.qry.type == 1                                    # A record queries (1 = A, 15 = MX, 28 = AAAA)
+dns.flags.response == 1                               # responses only
+dns.flags.rcode == 3                                   # NXDOMAIN (name does not exist)
+dns.flags.rcode != 0                                    # any DNS error
+
+--- READING A DNS RESPONSE (details pane) ---
+Queries      what was asked (name, type, class)
+Answers      what came back (name, type, TTL, data / address)
+[Request In: N]    the frame that asked
+[Time: x seconds]    how long the answer took
+
+--- STATISTICS MENU ---
+Statistics -> Conversations            # one row per conversation (Ethernet / IPv4 / TCP / UDP tabs)
+Statistics -> Protocol Hierarchy        # % of packets and bytes per protocol
+Statistics -> Capture File Properties    # packets, duration, interface, timestamps
+
+--- TSHARK (command-line Wireshark, bonus) ---
+tshark -r basic_capture.pcapng                           # print every packet
+tshark -r basic_capture.pcapng -Y "http.request"          # apply a display filter (-Y)
+tshark -r basic_capture.pcapng -q -z conv,tcp               # TCP conversation table, no packet lines
+tshark -r basic_capture.pcapng -q -z io,phs                   # protocol hierarchy
+tshark -r file.pcapng -Y dns -T fields -e dns.qry.name         # print just one field per packet
+
+==========================================
+END OF NETWORKING DAY 13 COMMAND SHEET
+==========================================
