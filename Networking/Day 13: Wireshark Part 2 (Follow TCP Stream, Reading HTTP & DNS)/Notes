@@ -1,0 +1,55 @@
+==========================================
+NETWORKING DAY 13 NOTES — Wireshark Part 2
+Date: 12-06-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- Follow TCP Stream rebuilds a whole conversation as readable text (red = client to server, blue = server to client)
+- Wireshark applies tcp.stream eq N automatically; changing N walks through each conversation
+- Plain HTTP is fully readable, and files can be rebuilt from a capture with File -> Export Objects -> HTTP
+- HTTP display filters: http.request.method, http.response.code, http.user_agent, http.host
+- DNS display filters: dns, dns.qry.name, dns.flags.rcode (3 = NXDOMAIN)
+- A DNS response shows its Queries, Answers (with TTL) and [Time: ...] in the details pane
+- Statistics -> Conversations and Protocol Hierarchy summarize a whole capture in two clicks
+- tshark is the command-line version of Wireshark: -r reads a file, -Y filters, -q -z prints statistics
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] Follow -> TCP Stream on a GET request
+[ ] tcp.stream eq 0 / 1 / 2
+[ ] http.request.method == "GET", http.response.code == 200
+[ ] File -> Export Objects -> HTTP, saved exported_page.html
+[ ] dig google.com / MX / a non-existent name, then filtered with dns.*
+[ ] Statistics -> Conversations (TCP tab) and Protocol Hierarchy
+[ ] (bonus) tshark -r basic_capture.pcapng -Y "http.request"
+
+describe or paste what you saw :
+Follow TCP Stream: bytes client -> server / server -> client
+> 
+
+http.request.method == "GET"  ->  Displayed: ___ of ___
+> 
+
+dig google.com  ->  A answer / TTL / [Time: ...]
+> 
+
+
+YOUR OBSERVATIONS:
+- Number of TCP streams in the file: 
+- Exported page size vs Content-Length: 
+- MX answer for google.com: 
+- Info text for the non-existent name: 
+- TCP conversations (ports, packets, bytes): 
+- HTTP vs plain TCP share in Protocol Hierarchy: 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 14 — Project 1 (network recon script: ping sweep + nmap summary)
+==========================================
