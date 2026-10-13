@@ -1,0 +1,65 @@
+==========================================
+NETWORKING DAY 14 — PROJECT 1
+Network Recon Script (netrecon.sh)
+==========================================
+
+--- RUNNING THE SCRIPT ---
+chmod +x netrecon.sh                  # make it executable
+bash -n netrecon.sh                    # syntax check only, runs nothing
+./netrecon.sh --help                    # usage
+./netrecon.sh                            # auto-detect the subnet of the default-route interface
+./netrecon.sh 192.168.80.0/24             # scan a subnet you choose (must be YOUR lab network)
+./netrecon.sh 127.0.0.1/32                 # safe dry run on your own machine
+NETRECON_DIR=~/my-reports ./netrecon.sh     # save reports somewhere else
+
+--- WHAT THE SCRIPT DOES ---
+1. detect_target / validate_target / confirm_target
+      private ranges only, /24 or smaller, retype the target to continue
+2. sweep        sudo nmap -sn <target> -oA sweep            ping sweep, who is alive
+3. scan_hosts   sudo nmap -F -sV --version-light -T4 --host-timeout 90s -iL live_hosts.txt -oA ports
+4. summarize    awk joins hostnames + MACs + open ports into one table, sorted with sort -V
+
+--- FILES ONE RUN CREATES (in ~/netrecon-reports/<date_time>/) ---
+sweep.nmap  sweep.gnmap  sweep.xml        ping sweep, three formats
+ports.nmap  ports.gnmap  ports.xml         port scan, three formats
+live_hosts.txt                              IPs that answered the sweep
+summary.txt                                  the final table
+
+--- NMAP FLAGS USED (and where you met them) ---
+-sn                      host discovery only, no port scan          Day 04
+-F                       top 100 ports                               Day 04
+-sV --version-light       service names/versions, light probing       Day 06
+-T4                       faster timing                               Day 04-05
+--host-timeout 90s         give up on one slow host after 90 s         Day 04
+-iL <file>                 read targets from a file
+-oA <name>                  save .nmap + .gnmap + .xml at once          Day 07
+
+--- READING THE THREE OUTPUT FORMATS ---
+.nmap      normal text, same as the terminal; has the "MAC Address:" lines
+.gnmap     grepable, one line per host:  Host: <ip> (<name>)<TAB>Ports: 22/open/tcp//ssh///, ...
+.xml       structured, meant for other programs to parse
+
+--- TEXT-PROCESSING RECIPES USED (Linux journal Days 15-16) ---
+awk '/Status: Up/ {print $2}' sweep.gnmap          # pull the IPs of live hosts
+awk -F'\t' '...'                                     # split a line on TAB instead of spaces
+sort -V                                               # sort IP addresses in natural order (.2 before .136)
+mktemp -d                                              # make a throwaway working directory
+
+--- COMPARING TWO RUNS (idea for Part E2) ---
+ls -dt ~/netrecon-reports/*/ | head -2               # newest two report folders
+sort live_hosts.txt > /tmp/now.txt                      # comm needs sorted input
+comm -13 /tmp/before.txt /tmp/now.txt                    # lines only in the NEW run  (new hosts)
+comm -23 /tmp/before.txt /tmp/now.txt                    # lines only in the OLD run  (missing hosts)
+
+--- CHECKING THE RESULT AGAINST REALITY ---
+ss -tuln                      # what is really listening on this machine (Linux journal Day 05)
+ip route                       # confirm which subnet you are on BEFORE scanning
+
+--- RULES TO KEEP ---
+Only scan networks you own or have written permission for.
+Read a script before you run it.
+Confirm the subnet with ip route before every run.
+
+==========================================
+END OF NETWORKING DAY 14 COMMAND SHEET
+==========================================
