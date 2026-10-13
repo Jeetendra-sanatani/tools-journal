@@ -1,0 +1,56 @@
+==========================================
+NETWORKING DAY 14 NOTES — Project 1: Network Recon Script
+Date: 13-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- A recon script is the earlier days chained together: sweep (Day 04), quick scan (Days 04-06), saved output (Day 07)
+- nmap -sn finds who is alive; -F, -sV, -T4 and --host-timeout make the follow-up scan fast and safe from hangs
+- -oA saves three formats at once; the script reads .gnmap (hostnames, open ports) and .nmap (MAC addresses)
+- awk can join data from several files into one table; sort -V puts IP addresses in natural order
+- Guards in a script (private ranges only, /24 or smaller, retype to confirm) help, but cannot know who OWNS a network
+- Always read a script before running it, and confirm the subnet with ip route first
+- nmap -F only checks the top 100 ports, so a summary can miss services on unusual ports
+
+PART A — SCRIPT MAP (fill in):
+detect_target    -> 
+validate_target  -> 
+sweep            -> 
+scan_hosts       -> 
+summarize        -> 
+Flag that stops a scan hanging on one host: 
+Format read for hostnames/open ports: 
+Format read for MAC addresses: 
+
+COMMANDS / ACTIONS YOU PRACTICED:
+[ ] bash -n netrecon.sh  and  less netrecon.sh
+[ ] ./netrecon.sh 127.0.0.1/32
+[ ] ip route, then ./netrecon.sh on my lab subnet
+[ ] ls / cat / head on the saved reports
+[ ] one improvement (E1, E2 or E3)
+
+paste the summary table here:
+> 
+
+
+YOUR OBSERVATIONS:
+- Hosts up on loopback / open ports listed: 
+- Does the summary match ss -tuln? 
+- Hosts up on my lab subnet (compare with Day 04's 4 hosts): 
+- Which device is which (.1 / .2 / .254 / my Kali): 
+- Number of files one run created: 
+- Improvement I chose and what I changed: 
+- One thing that broke along the way: 
+
+CHALLENGES — MY ANSWERS:
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Networking Day 15 — Project 2 (capture lab traffic, short analysis report, series wrap-up)
+==========================================
