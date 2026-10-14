@@ -1,0 +1,58 @@
+==========================================
+NETWORKING DAY 15 NOTES — Project 2: Capture Your Lab Traffic
+Date: 14-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- A capture filter (tcpdump 'tcp port 8080') keeps unrelated traffic out of the file; a display filter only hides it
+- tcpdump -w saves packets, tcpdump -r reads them back, and the same file opens in Wireshark and tshark
+- tshark -T fields -e <field> prints just the fields I ask for, which turns a capture into a fact sheet
+- A report is only worth something if every finding points to a command or screenshot
+- A good report also says what it does NOT show
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] tcpdump -i lo -n 'tcp port 8080' -w web.pcap
+[ ] tcpdump -i eth0 -n 'icmp or port 53' -w net.pcap
+[ ] tcpdump -r web.pcap with a SYN filter
+[ ] capinfos / tshark -z conv,tcp / tshark -T fields
+[ ] filled in REPORT_TEMPLATE.md
+
+FACT SHEET :
+web.pcap   packets: ___   duration: ___   TCP conversations: ___
+Client tool + version: 
+Server software + version: 
+Server response times (3 requests): 
+net.pcap   packets: ___
+Ping round trips (4): 
+DNS answer(s) for example.com: 
+DNS response time: 
+
+
+
+YOUR OBSERVATIONS:
+- Packets for 3 curl requests: 
+- SYN filter line count and what it means: 
+- My one surprise: 
+
+
+
+SERIES REFLECTION (Networking, Days 01-15):
+Three tools I would reach for first on a real problem:
+1. 
+2. 
+3. 
+Three things that surprised or tripped me up:
+1. 
+2. 
+3. 
+The pending item I will close first (see Networking/README.md):
+> 
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+NEXT PHASE: Sysadmin tools (tmux, lsof, strace, iptables, fail2ban...)
+==========================================
