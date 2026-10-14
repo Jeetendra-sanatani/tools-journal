@@ -1,0 +1,45 @@
+==========================================
+SYSADMIN DAY 01 NOTES — tmux
+Date: 14-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- tmux keeps a session alive even if the terminal app closes or an SSH connection drops
+- Sessions (tmux new -s / tmux attach -t) are the top level; name them so they're easy to find
+- Windows (Ctrl+b c) are like tabs inside one session; panes (Ctrl+b % or ") split one window
+- Detach with Ctrl+b d; everything keeps running in the background until you reattach
+- tmux ls shows every session and whether it's currently attached
+- This matters most on a remote server over SSH, where a dropped connection would normally kill anything running
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] tmux new -s <name> / tmux ls / tmux attach -t <name>
+[ ] Ctrl+b d (detach) and reattaching
+[ ] Ctrl+b c, rename with Ctrl+b , , switching windows with n/p
+[ ] Ctrl+b % and " (splitting into panes), moving between them
+[ ] Ctrl+b z (zoom)
+[ ] closing the whole terminal app while something ran inside tmux, then reattaching
+[ ] tmux kill-session -t <name>
+
+describe or paste what you saw :
+$ tmux ls (after creating lab01)
+> 
+
+$ tmux attach -t lab01 (after closing the terminal app entirely)
+> 
+
+
+YOUR OBSERVATIONS:
+- Did my shell state (echo output, directory) survive detach + reattach? 
+- Did a running command (htop/ping) keep going when I switched windows? 
+- Did the ping survive closing the whole terminal app? 
+- What tmux ls showed after kill-session: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Sysadmin Day 02 — lsof (list open files, "what has this port/file open?")
+==========================================
