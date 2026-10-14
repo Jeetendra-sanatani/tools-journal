@@ -1,0 +1,44 @@
+==========================================
+NETWORKING DAY 15 — PROJECT 2
+Capture Your Lab Traffic, Write a Short Report
+==========================================
+
+--- SETUP ---
+python3 -m http.server 8080              # Terminal 1: local web server on your own machine
+ip route                                  # find your gateway (address after "default via")
+
+--- CAPTURE WITH TCPDUMP (needs sudo; stop with Ctrl+C) ---
+sudo tcpdump -i lo -n 'tcp port 8080' -w web.pcap        # web traffic on loopback
+sudo tcpdump -i eth0 -n 'icmp or port 53' -w net.pcap      # ping + DNS on your real interface
+curl -s http://127.0.0.1:8080/ > /dev/null                   # generate a request (run it 3 times)
+ping -c 4 <gateway-ip>                                         # generate ICMP
+dig example.com                                                  # generate a DNS lookup
+ls -lh *.pcap                                                     # sizes of the capture files
+
+--- READ A CAPTURE BACK (no sudo needed) ---
+tcpdump -r web.pcap -n | head -20                                  # first packets
+tcpdump -r web.pcap -n 'tcp[tcpflags] & tcp-syn != 0'               # only SYN and SYN-ACK packets
+tcpdump -r net.pcap -n                                                # everything in the ping/DNS capture
+
+--- FACT EXTRACTION WITH TSHARK ---
+capinfos web.pcap                                                      # packets, duration, file size
+tshark -r web.pcap -q -z conv,tcp                                       # TCP conversation table
+tshark -r web.pcap -Y http -T fields -e http.user_agent -e http.server    # client tool + server software
+tshark -r web.pcap -Y http.response -T fields -e http.time                  # server response time per request
+tshark -r net.pcap -Y "dns.flags.response == 1" -T fields -e dns.qry.name -e dns.a -e dns.time
+tshark -r net.pcap -Y "icmp.type == 0" -T fields -e icmp.resptime             # ping round trips (replies)
+   # if a field prints nothing, open the same file in Wireshark and read it from the packet details pane
+
+--- WRITING THE REPORT ---
+cp REPORT_TEMPLATE.md report.md                                         # start from the template
+every finding -> name the command or screenshot that proves it
+limits section -> say what you did NOT capture
+
+--- RULES TO KEEP ---
+Capture only on your own machine and your own lab network.
+Stop captures as soon as the traffic you care about is done.
+Use a capture filter so unrelated traffic doesn't fill the file.
+
+==========================================
+END OF NETWORKING DAY 15 COMMAND SHEET
+==========================================
