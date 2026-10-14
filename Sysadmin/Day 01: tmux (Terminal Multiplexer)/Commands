@@ -1,0 +1,50 @@
+==========================================
+SYSADMIN DAY 01 — TMUX (TERMINAL MULTIPLEXER)
+Commands Reference Sheet
+==========================================
+
+--- STARTING / LEAVING ---
+tmux                        # start a new, unnamed session
+tmux new -s <name>           # start a new, NAMED session (always name it)
+Ctrl+b  d                     # detach (leaves it running in the background)
+tmux attach -t <name>          # reattach to a named session
+tmux a -t <name>                # same, shorthand
+
+--- MANAGING SESSIONS ---
+tmux ls                       # list all sessions (name, windows, size, attached?)
+tmux kill-session -t <name>    # kill one named session
+tmux kill-server                # kill tmux entirely, all sessions gone
+
+--- WINDOWS (tabs within one session) ---
+Ctrl+b  c       create a new window
+Ctrl+b  ,       rename the current window
+Ctrl+b  n       next window
+Ctrl+b  p       previous window
+Ctrl+b  0-9     jump to window number 0-9
+Ctrl+b  w       interactive list of all windows
+Ctrl+b  &       close the current window (asks to confirm)
+
+--- PANES (splits within one window) ---
+Ctrl+b  %        split vertically (side by side)
+Ctrl+b  "        split horizontally (stacked)
+Ctrl+b  <arrow>   move to the pane in that direction
+Ctrl+b  o          cycle to the next pane
+Ctrl+b  z           zoom current pane fullscreen (press again to unzoom)
+Ctrl+b  x            close current pane (asks to confirm)
+Ctrl+b  q             briefly show pane numbers
+
+--- WHY IT MATTERS ---
+Everything running inside a tmux session keeps running even if:
+  - you close the terminal app
+  - your SSH connection drops
+  - you log out and back in (as long as the machine itself stays up)
+This is why tmux matters most on a REMOTE server reached over SSH (Networking Day 18-19) -
+a long-running command (a download, a scan, a backup) survives a dropped connection.
+
+--- QUICK REFERENCE: THE PREFIX KEY ---
+Every tmux shortcut starts with the PREFIX, Ctrl+b by default: press Ctrl+b,
+release both keys, THEN press the next key (e.g. d, c, %). It's not held together.
+
+==========================================
+END OF SYSADMIN DAY 01 COMMAND SHEET
+==========================================
