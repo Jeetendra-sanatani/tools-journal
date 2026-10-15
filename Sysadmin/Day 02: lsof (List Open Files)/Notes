@@ -1,0 +1,47 @@
+==========================================
+SYSADMIN DAY 02 NOTES — lsof
+Date: 15-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- lsof lists every file (including network sockets) a process has open RIGHT NOW
+- lsof -i shows network connections/ports; -sTCP:LISTEN narrows to just listening ports
+- lsof -i :<port> and sudo fuser <port>/tcp both answer "what's using this port" - good for conflicts
+- lsof -p <PID> / -c <name> / -u <user> filter by process, program name, or user
+- FD column: cwd = working directory, txt = the program itself, a number like 3u = an open file (u=read+write)
+- A deleted file stays on disk (and takes up space) until every process with it open closes it - lsof still shows it, marked (deleted)
+- lsof +L1 finds exactly these "deleted but still open" files - fixes the classic "disk full but I can't find the file" problem
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] sudo lsof -i  /  -sTCP:LISTEN  /  -i :22
+[ ] sudo lsof /var/log/syslog
+[ ] sudo lsof -p <PID>  /  -c bash
+[ ] sudo lsof -i :8080  vs  sudo fuser 8080/tcp (port conflict test)
+[ ] the deleted-file-still-open trick (D1)
+
+paste or describe what you saw:
+$ sudo lsof -i -sTCP:LISTEN
+> 
+
+$ sudo lsof -i :8080 (after starting python3 -m http.server 8080)
+> 
+
+$ sudo lsof /tmp/deleteme.txt (after deleting it while tail -f still had it open)
+> 
+
+
+YOUR OBSERVATIONS:
+- Compared lsof -i -sTCP:LISTEN with ss -tuln - same ports? 
+- What error C3 gave when the port was already in use: 
+- Did lsof and fuser report the same PID for port 8080? 
+- Why disk space isn't freed when rm'ing a file that's still open: 
+
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+TOMORROW'S TOPIC: Sysadmin Day 03 — strace (trace a program's system calls)
+==========================================
