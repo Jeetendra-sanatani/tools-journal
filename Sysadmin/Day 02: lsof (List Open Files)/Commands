@@ -1,0 +1,49 @@
+==========================================
+SYSADMIN DAY 02 — LSOF (LIST OPEN FILES)
+Commands Reference Sheet
+==========================================
+
+--- CHECK INSTALL ---
+which lsof
+sudo apt install -y lsof
+
+--- NETWORK CONNECTIONS / LISTENING PORTS ---
+sudo lsof -i                        # every open network connection/port, all processes
+sudo lsof -i -sTCP:LISTEN            # only LISTENING ports (not established connections)
+sudo lsof -i :22                      # what's using port 22 specifically
+sudo lsof -i tcp                       # TCP only
+sudo lsof -i udp                        # UDP only
+sudo lsof -i @192.168.80.2               # connections to/from one specific IP
+
+--- FILES OPEN BY A SPECIFIC PROCESS OR FILE ---
+sudo lsof /path/to/file               # which process(es) have THIS file open
+sudo lsof -p <PID>                      # every file a specific PID has open
+sudo lsof -c <name>                      # every file open by processes matching this name
+sudo lsof -u <username>                   # every file open by a specific user
+
+--- THE PORT-CONFLICT WORKFLOW ---
+sudo lsof -i :<port>                   # find out what's already using a port
+sudo fuser <port>/tcp                   # alternative, quicker, just prints the PID
+kill <PID>                               # free the port by stopping that process
+
+--- READING THE FD (FILE DESCRIPTOR) COLUMN ---
+cwd      current working directory of the process
+txt      the program's own executable / shared libraries
+mem      memory-mapped file
+3u, 4u...   a regular open file descriptor (number = fd number, u = read+write)
+   (r = read only, w = write only, u = read/write)
+
+--- DELETED-BUT-STILL-OPEN FILES ---
+sudo lsof /path/to/file               # shows (deleted) next to the name if rm'd while still open
+   # the disk space is NOT freed until every process holding it open closes it or exits
+   # classic fix for "df shows disk full but I can't find the big file":
+sudo lsof +L1                           # list all files with a link count of 0 (deleted but still open)
+
+--- COMPARE WITH TOOLS FROM THE LINUX JOURNAL ---
+ss -tuln          # Day 5: listening ports, no file-level detail
+ps aux            # Day 4: processes, no file-level detail
+lsof               # combines both: WHICH process has WHICH file/port open, right now
+
+==========================================
+END OF SYSADMIN DAY 02 COMMAND SHEET
+==========================================
