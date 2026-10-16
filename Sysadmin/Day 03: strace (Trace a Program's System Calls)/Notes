@@ -1,0 +1,47 @@
+==========================================
+SYSADMIN DAY 03 NOTES — strace
+Date: 16-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- strace shows every system call a program makes, in order, as it happens
+- strace -c gives a summary table (syscall, count, time%) instead of the full firehose
+- strace -e trace=<category> filters to just file, network, or specific named syscalls
+- strace -p <PID> attaches to an ALREADY RUNNING process; Ctrl+C detaches without killing it
+- A syscall returning -1 means failure; the E-code after it (EACCES, ENOENT...) is the exact reason
+- EACCES = permission denied, ENOENT = file/path doesn't exist - look similar to the user, different underneath
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] strace ls /tmp  /  strace -c ls /tmp
+[ ] strace -e trace=open,read,write,close ls /tmp
+[ ] strace -e trace=network curl ...
+[ ] sudo strace -p <PID> on a running sleep, then Ctrl+C to detach
+[ ] comparing EACCES vs ENOENT on two different failures
+
+paste or describe what you saw :
+$ strace -c ls /tmp
+> 
+
+$ strace -e trace=network curl -s http://127.0.0.1:8080/ > /dev/null
+> 
+
+$ strace cat /root/secret.txt 2>&1 | tail -5
+> 
+
+
+YOUR OBSERVATIONS:
+- Most-called syscall in the -c summary, and its time%: 
+- connect() target address/port seen in B2: 
+- Did the sleep process survive detaching strace? 
+- EACCES line vs ENOENT line, side by side: 
+
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Sysadmin Day 04 — iptables Part 1 (chains, tables, basic rules)
+==========================================
