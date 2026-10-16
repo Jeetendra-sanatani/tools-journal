@@ -1,0 +1,48 @@
+==========================================
+SYSADMIN DAY 03 — STRACE
+Trace a Program's System Calls
+==========================================
+
+--- CHECK INSTALL ---
+which strace
+sudo apt install -y strace
+
+--- BASIC TRACING ---
+strace <command>                    # trace a command from start to finish, every syscall
+strace -c <command>                  # just a SUMMARY: syscall, count, time%, errors
+strace -o output.txt <command>        # save the trace to a file instead of the screen
+
+--- FILTERING BY CATEGORY ---
+strace -e trace=open,read,write,close <command>   # only these specific syscalls
+strace -e trace=network <command>                   # only network-related syscalls (socket, connect, etc.)
+strace -e trace=file <command>                        # only file-related syscalls
+strace -c -e trace=network <command>                   # summary, network syscalls only
+
+--- ATTACHING TO A RUNNING PROCESS ---
+sudo strace -p <PID>                 # attach to an already-running process by PID
+                                      # Ctrl+C detaches WITHOUT killing the process
+ps -p <PID>                           # confirm the process is still alive after detaching
+
+--- READING ONE LINE OF OUTPUT ---
+openat(AT_FDCWD, "/etc/passwd", O_RDONLY) = 3
+   │                │                        │    └── return value: 3 = success (a file descriptor number)
+   │                │                        └── flags: how it's being opened
+   │                └── the path being opened
+   └── the syscall name
+
+connect(3, {sa_family=AF_INET, sin_port=htons(8080), sin_addr=inet_addr("127.0.0.1")}, 16) = 0
+   # connecting file descriptor 3 to 127.0.0.1:8080, return 0 = success
+
+--- READING A FAILURE ---
+openat(AT_FDCWD, "/root/secret.txt", O_RDONLY) = -1 EACCES (Permission denied)
+openat(AT_FDCWD, "/tmp/nofile.txt", O_RDONLY) = -1 ENOENT (No such file or directory)
+   # -1 always means the call failed; the E-code (EACCES, ENOENT...) is the EXACT reason
+
+--- WHY THIS MATTERS ---
+strace shows the TRUTH beneath a program's own error message. "Permission denied" and
+"No such file or directory" can look similar to a user, but strace shows EACCES vs ENOENT -
+genuinely different problems needing different fixes.
+
+==========================================
+END OF SYSADMIN DAY 03 COMMAND SHEET
+==========================================
