@@ -1,0 +1,45 @@
+==========================================
+SYSADMIN DAY 04 NOTES — iptables Part 1
+Date: 17-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- iptables is the real firewall engine; ufw (Linux journal Day 21) is a friendlier frontend to it
+- The filter table has 3 built-in chains: INPUT (to this machine), OUTPUT (from it), FORWARD (through it)
+- Rules are checked TOP TO BOTTOM, first match wins - order matters, a DROP above an ACCEPT wins
+- -A appends to the bottom, -I inserts at a specific position (usually the top)
+- DROP silently discards; REJECT discards AND tells the sender - genuinely different behavior
+- -F flushes (deletes) all rules in a table - the fast way back to a clean, safe state
+- Delete rules by line number from the BOTTOM up, since earlier numbers shift after each delete
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] iptables -L -v -n  /  -S  (viewing current rules)
+[ ] iptables -t filter -L  vs  -t nat -L (different tables)
+[ ] iptables -A INPUT ... -j ACCEPT / DROP
+[ ] iptables -I INPUT 1 ... (inserting above an existing rule)
+[ ] iptables -D INPUT <line>  and  iptables -F (cleanup)
+
+paste or describe what you saw :
+$ sudo iptables -L INPUT -v -n --line-numbers (after Part C)
+> 
+
+$ ping -c 3 <eth0-ip> (before and after the ACCEPT insert)
+> 
+
+
+YOUR OBSERVATIONS:
+- The 3 filter chains and what each sees: 
+- Did DROP give a timeout or an immediate "unreachable"? 
+- Rule order after inserting the ACCEPT above the DROP: 
+- Did ping succeed after the insert, and why (in terms of rule order)? 
+
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Sysadmin Day 05 — iptables Part 2 (NAT, logging, saving rules)
+==========================================
