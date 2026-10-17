@@ -1,0 +1,57 @@
+==========================================
+SYSADMIN DAY 04 — IPTABLES PART 1
+Tables, Chains & Basic Rules
+==========================================
+
+--- CHECK INSTALL & CURRENT STATE ---
+which iptables
+sudo iptables -L -v -n              # list rules, readable (packets/bytes seen, verbose, numeric)
+sudo iptables -S                     # list rules as the exact iptables commands that built them
+sudo iptables -L INPUT -v -n --line-numbers   # one chain only, with line numbers (needed to delete by number)
+
+--- TABLES (-t) ---
+sudo iptables -t filter -L -v -n     # filter = default table, ACCEPT/DROP decisions (3 chains: INPUT/OUTPUT/FORWARD)
+sudo iptables -t nat -L -v -n         # nat = address translation rules (Day 05 topic)
+sudo iptables -t mangle -L -v -n       # mangle = packet modification (rare, not covered here)
+
+--- THE 3 BUILT-IN CHAINS IN filter ---
+INPUT       traffic destined FOR this machine
+OUTPUT      traffic originating FROM this machine
+FORWARD     traffic passing THROUGH this machine (only relevant if it's routing for others)
+
+--- ADDING RULES ---
+sudo iptables -A INPUT -i lo -j ACCEPT        # -A = append (add to the END of the chain)
+sudo iptables -A INPUT -p icmp -j DROP         # -p = match this protocol
+sudo iptables -I INPUT 1 -p icmp -j ACCEPT      # -I = insert at a specific position (1 = top)
+
+--- COMMON MATCH OPTIONS ---
+-i <iface>        incoming interface (e.g. -i lo, -i eth0)
+-o <iface>         outgoing interface
+-p <protocol>       tcp / udp / icmp
+-s <ip>              source address
+-d <ip>               destination address
+--dport <port>         destination port (needs -p tcp or -p udp first)
+--sport <port>          source port
+
+--- TARGETS (what to DO with a matching packet) ---
+ACCEPT     let it through
+DROP        silently discard (sender gets no response, just a timeout)
+REJECT       discard AND tell the sender (e.g. "destination unreachable") - different from DROP
+
+--- REMOVING RULES ---
+sudo iptables -D INPUT <line-number>     # delete ONE rule by its line number (check with --line-numbers first)
+sudo iptables -D INPUT -p icmp -j DROP    # delete by matching the exact rule spec instead of a number
+sudo iptables -F                           # FLUSH: delete every rule in the current table, back to empty
+sudo iptables -F INPUT                      # flush just one chain
+
+--- RESETTING COUNTERS ---
+sudo iptables -Z            # zero out packet/byte counters (doesn't touch the rules themselves)
+
+--- WHY ORDER MATTERS ---
+iptables checks rules TOP TO BOTTOM and stops at the FIRST match. A DROP rule followed
+by an ACCEPT rule for the same traffic never reaches the ACCEPT - the DROP already fired.
+-I (insert) puts a rule ABOVE existing ones; -A (append) puts it at the BOTTOM.
+
+==========================================
+END OF SYSADMIN DAY 04 COMMAND SHEET
+==========================================
