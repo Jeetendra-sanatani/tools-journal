@@ -1,0 +1,55 @@
+==========================================
+SYSADMIN DAY 05 — IPTABLES PART 2
+Logging, NAT, Saving Rules
+==========================================
+
+--- LOGGING ---
+sudo iptables -A INPUT -p icmp -j LOG --log-prefix "ICMP-DROPPED: "   # LOG records, does NOT block
+sudo iptables -A INPUT -p icmp -j DROP                                  # the actual block is separate
+sudo journalctl -k --since "2 min ago" | grep <your-prefix>              # find the log entries
+sudo dmesg | grep <your-prefix>                                           # alternative location
+
+--- NAT TABLE ---
+sudo iptables -t nat -L -v -n                                   # view NAT rules (separate from filter table)
+sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE         # let routed traffic look like it came from this machine
+sudo iptables -t nat -F                                            # flush just the nat table
+
+--- NAT CHAINS, BRIEFLY ---
+PREROUTING    before routing decision - used for DNAT (redirect incoming traffic to a different destination)
+POSTROUTING    after routing decision - used for SNAT/MASQUERADE (rewrite the source address on the way out)
+OUTPUT          NAT for traffic originating from this machine itself
+
+--- SAVING / RESTORING RULES ---
+sudo iptables-save > ~/iptables-backup.rules     # dump current rules (all tables) to a text file
+sudo iptables-restore < ~/iptables-backup.rules    # load rules back from that file
+cat ~/iptables-backup.rules                          # it's plain text, readable directly
+
+--- MAKING RULES SURVIVE A REBOOT (concept, not required to install) ---
+# plain iptables rules are LOST on reboot unless something reloads them
+sudo apt install iptables-persistent                   # installs a service that auto-loads saved rules
+sudo netfilter-persistent save                            # saves current rules for that service to reload at boot
+
+--- DEFAULT POLICIES ---
+sudo iptables -P INPUT DROP          # -P sets the DEFAULT action for a whole chain (if no rule matches)
+sudo iptables -P INPUT ACCEPT         # the SAFE default while testing - always return to this when done
+
+--- A MINIMAL SAFE BASE FIREWALL (allow loopback, allow replies, allow SSH, drop the rest) ---
+sudo iptables -F
+sudo iptables -P INPUT DROP
+sudo iptables -P FORWARD DROP
+sudo iptables -P OUTPUT ACCEPT
+sudo iptables -A INPUT -i lo -j ACCEPT
+sudo iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+   # ORDER MATTERS: loopback and established/related rules come BEFORE anything else,
+   # so replies to connections YOU started are never blocked by what comes after
+
+--- ALWAYS KNOW HOW TO UNDO THIS ---
+sudo iptables -F
+sudo iptables -P INPUT ACCEPT
+sudo iptables -P FORWARD ACCEPT
+sudo iptables -P OUTPUT ACCEPT
+
+==========================================
+END OF SYSADMIN DAY 05 COMMAND SHEET
+==========================================
