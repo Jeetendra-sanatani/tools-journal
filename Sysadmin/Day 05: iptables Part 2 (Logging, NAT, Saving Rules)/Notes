@@ -1,0 +1,52 @@
+==========================================
+SYSADMIN DAY 05 NOTES — iptables Part 2
+Date: 19-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- LOG records a packet but does NOT block it - the DROP/ACCEPT after it is a separate decision
+- The nat table is completely separate from filter; MASQUERADE rewrites a packet's source address
+  for routed traffic, used in POSTROUTING (after the routing decision is made)
+- iptables rules are LOST on reboot unless saved; iptables-save/restore is the manual way,
+  iptables-persistent is the automatic (every-boot) way
+- -P sets a chain's DEFAULT policy (what happens when no rule matches)
+- A safe base firewall allows loopback and ESTABLISHED,RELATED traffic FIRST, so replies to
+  connections you started are never accidentally blocked by rules that come after
+- Always know the undo (-F, then -P ... ACCEPT on every chain) before applying a default-DROP policy
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] iptables -A INPUT -p icmp -j LOG --log-prefix ... then -j DROP, checked journalctl/dmesg
+[ ] iptables -t nat -L -v -n  /  -A POSTROUTING -j MASQUERADE  (read or applied)
+[ ] iptables-save > file  /  iptables -F  /  iptables-restore < file
+[ ] the base firewall script (Part D) - default DROP + loopback + established + SSH
+
+paste or describe what you saw :
+$ sudo journalctl -k --since "2 min ago" | grep <prefix>
+> 
+
+$ sudo iptables-save > ~/iptables-backup.rules ; grep 9999 ~/iptables-backup.rules
+> 
+
+$ sudo iptables -L -v -n --line-numbers (Part D base firewall)
+> 
+
+
+YOUR OBSERVATIONS:
+- Did LOG alone block anything, or was the separate DROP still needed? 
+- What MASQUERADE does to a packet's source address, in my own words: 
+- What happens to rules on a plain reboot without saving? 
+- Why ESTABLISHED,RELATED comes before the SSH rule: 
+- What happened trying a port that wasn't 22 under the Part D policy: 
+
+CHALLENGES :
+(fill in once the README with challenges is ready)
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Sysadmin Day 06 — fail2ban (auto-blocking brute-force attempts)
+==========================================
