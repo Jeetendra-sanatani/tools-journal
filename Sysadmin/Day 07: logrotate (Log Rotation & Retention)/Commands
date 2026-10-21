@@ -1,0 +1,52 @@
+==========================================
+SYSADMIN DAY 07 — LOGROTATE
+Log Rotation & Retention
+==========================================
+
+--- CHECK INSTALL & EXISTING CONFIG ---
+which logrotate
+cat /etc/logrotate.conf           # global defaults
+ls /etc/logrotate.d/               # one config file per service
+cat /etc/logrotate.d/<name>          # read a specific one
+
+--- KEY DIRECTIVES ---
+daily / weekly / monthly    how often to rotate (time-based)
+size 1k / 10M / 1G            rotate once the file reaches this size (instead of/alongside time-based)
+rotate N                        keep N old rotated copies, delete anything older
+compress                         gzip old rotated copies (saves space)
+delaycompress                     compress the PREVIOUS rotation, not the newest one (lets a process
+                                   finish any pending writes to the just-rotated file first)
+missingok                          don't error if the log file doesn't exist
+notifempty                          don't rotate an empty file (nothing to save)
+create 0640 user group                after rotating, create a fresh empty file with these permissions
+copytruncate                          copy the log, then truncate the ORIGINAL to zero - the process
+                                       keeps writing to the same (still-open) file handle, no restart needed
+postrotate ... endscript               a block of commands to run AFTER rotation (commonly: tell the
+                                       service to reopen its log file, e.g. systemctl reload <service>)
+
+--- DRY RUN (see what WOULD happen, changes nothing) ---
+sudo logrotate -d /etc/logrotate.d/<name>    # debug mode for one config
+sudo logrotate -d /etc/logrotate.conf          # debug mode for everything
+
+--- FORCING A ROTATION NOW (ignores normal schedule) ---
+sudo logrotate -f /etc/logrotate.d/<name>
+
+--- TWO WAYS TO ROTATE A LOG A PROCESS STILL HAS OPEN ---
+# Method 1: rename + create + signal the process to reopen (typical for well-behaved services)
+#    mv app.log app.log.1 ; touch app.log ; kill -HUP <pid-of-service>
+#    (needs postrotate/endscript to actually send that signal - see Day 02's lsof lesson:
+#     without the signal, the OLD process keeps writing into the renamed/deleted file forever)
+#
+# Method 2: copytruncate - copy the current content out, then truncate the ORIGINAL file to 0 bytes
+#    The process's open file handle is untouched (same file, same inode, just now empty) -
+#    no signal needed, works even for programs you can't easily tell to "reopen" its log
+
+--- WHY THIS CONNECTS TO LINUX JOURNAL DAY 02 (lsof) ---
+A naive "rm the old log, make a new one" approach is EXACTLY the trap from that day: a process
+with the OLD file still open by file descriptor keeps writing into it, invisible and unreachable
+by any path, while disk space never gets freed. logrotate's copytruncate (or its proper
+rename+signal method) exists specifically to avoid that trap.
+
+==========================================
+END OF SYSADMIN DAY 07 COMMAND SHEET
+==========================================
