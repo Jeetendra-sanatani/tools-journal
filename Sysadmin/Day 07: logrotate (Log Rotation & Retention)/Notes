@@ -1,0 +1,48 @@
+==========================================
+SYSADMIN DAY 07 NOTES — logrotate
+Date: 21-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- logrotate configs live in /etc/logrotate.d/, one per service, read by /etc/logrotate.conf's defaults
+- Key directives: daily/weekly/size (when), rotate N (how many copies to keep), compress (save space)
+- -d is a safe DRY RUN that shows what would happen without changing anything
+- -f FORCES rotation right now, ignoring the normal schedule
+- copytruncate copies the log then truncates the ORIGINAL to zero - the process's open file handle
+  stays valid (same inode), so it keeps writing normally with no restart/signal needed
+- This directly solves the Linux journal Day 02 lsof problem: a plain rename/delete would leave
+  a running process writing into an invisible, unreachable old file, wasting disk space forever
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] reading a real /etc/logrotate.d/ config
+[ ] logrotate -d (dry run) on an existing config
+[ ] writing my own test config with size/rotate/compress/copytruncate
+[ ] logrotate -f to force an immediate rotation
+[ ] testing copytruncate against a log a background process was actively still writing to
+
+paste or describe what you saw :
+$ cat /etc/logrotate.d/<the one I read> (key directives)
+> 
+
+$ ls -lh ~/logrotate-lab/ (after forced rotation)
+> 
+
+$ tail -5 ~/logrotate-lab/myapp.log (after rotating WHILE the writer was still running)
+> 
+
+
+YOUR OBSERVATIONS:
+- Which config I read, and what it rotates/keeps: 
+- Did the dry run (-d) say "must rotate" or "skip", and why: 
+- Did the background writer's new lines appear in the rotated file afterward? 
+- Why copytruncate avoids the Day 02 lsof "deleted but still open" trap: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS I HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Sysadmin Day 08 — auditd (system call auditing)
+==========================================
