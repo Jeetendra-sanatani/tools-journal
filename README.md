@@ -69,7 +69,7 @@ flowchart LR
     D --> E[Git Advanced<br/>5 days]
 
     style A fill:#2ea043,color:#fff
-    style B fill:#30363d,color:#8b949e
+    style B fill:#2ea043,color:#fff
     style C fill:#30363d,color:#8b949e
     style D fill:#30363d,color:#8b949e
     style E fill:#30363d,color:#8b949e
