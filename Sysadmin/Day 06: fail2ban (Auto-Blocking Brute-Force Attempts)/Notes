@@ -1,0 +1,48 @@
+==========================================
+SYSADMIN DAY 06 NOTES — fail2ban
+Date: 20-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- fail2ban automates the Linux journal Day 28 manual "grep Failed password | count per IP" investigation
+- Three numbers define a jail: maxretry (how many fails), findtime (time window), bantime (ban duration)
+- Never edit jail.conf directly - overrides go in jail.local, which fail2ban merges on top
+- A ban is enforced by inserting a real iptables rule (its own f2b-<jail> chain) automatically
+- fail2ban-client status <jail> shows currently failed/banned counts and the ban list
+- unbanip removes both the fail2ban-side ban record AND the underlying iptables rule
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] fail2ban-client status / status sshd
+[ ] creating jail.local, enabling the sshd jail, restarting the service
+[ ] deliberately failing SSH login 3 times to trigger a real ban on myself
+[ ] checking the f2b-sshd iptables chain
+[ ] reading /var/log/fail2ban.log for the actual ban decision
+[ ] unbanning myself and confirming SSH access returned
+
+paste or describe what you saw :
+$ sudo fail2ban-client status sshd (after the ban)
+> 
+
+$ sudo iptables -L -n -v | grep -A 5 f2b-sshd
+> 
+
+$ sudo tail -20 /var/log/fail2ban.log (the ban line)
+> 
+
+
+YOUR OBSERVATIONS:
+- Default bantime/findtime/maxretry: 
+- What happened trying to SSH in while banned (hang, refuse, timeout)? 
+- Did unbanip clean up the iptables rule automatically? 
+- Does a ban survive a reboot, based on where fail2ban stores its state? 
+
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Sysadmin Day 07 — logrotate (log rotation & retention)
+==========================================
