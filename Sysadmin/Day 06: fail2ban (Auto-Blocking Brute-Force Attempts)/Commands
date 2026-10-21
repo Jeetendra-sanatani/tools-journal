@@ -1,0 +1,55 @@
+==========================================
+SYSADMIN DAY 06 — FAIL2BAN
+Auto-Blocking Brute-Force Attempts
+==========================================
+
+--- INSTALL & STATUS ---
+sudo apt install -y fail2ban
+sudo systemctl status fail2ban
+sudo systemctl enable --now fail2ban        # start now AND on every future boot
+sudo fail2ban-client status                  # list active jails
+sudo fail2ban-client status sshd              # detail for one specific jail
+
+--- KEY CONFIG FILES ---
+/etc/fail2ban/jail.conf          # shipped defaults - NEVER edit directly (overwritten on updates)
+/etc/fail2ban/jail.local          # YOUR overrides - create this, fail2ban reads both and merges
+/etc/fail2ban/filter.d/sshd.conf   # the regex pattern that recognizes "this log line = a failed login"
+/etc/fail2ban/action.d/            # what to DO when banning (default: an iptables rule)
+
+--- THE THREE KEY NUMBERS ---
+maxretry    how many failures before a ban (default 5)
+findtime    the TIME WINDOW those failures must happen within (default 10 min / 600s)
+bantime     how long the ban lasts once triggered (default 10 min / 600s)
+   # "maxretry failures within findtime seconds -> banned for bantime seconds"
+
+--- ENABLING A JAIL (via jail.local, not jail.conf) ---
+sudo tee /etc/fail2ban/jail.local << 'EOF'
+[sshd]
+enabled = true
+maxretry = 3
+findtime = 300
+bantime = 600
+EOF
+sudo systemctl restart fail2ban
+
+--- MANAGING BANS ---
+sudo fail2ban-client status sshd                    # see currently banned IPs
+sudo fail2ban-client set sshd banip <ip>              # manually ban an IP
+sudo fail2ban-client set sshd unbanip <ip>             # manually unban an IP
+sudo fail2ban-client set sshd unbanip --all              # unban everyone in that jail
+
+--- SEEING THE FIREWALL RULE IT CREATES ---
+sudo iptables -L -n -v | grep -A 5 f2b-sshd            # fail2ban's own chain, inserted automatically
+
+--- LOGS ---
+sudo tail -f /var/log/fail2ban.log                      # fail2ban's own activity log, live
+sudo journalctl -u fail2ban -f                            # same info via systemd's journal
+
+--- TESTING SAFELY (your own machine, your own SSH, only) ---
+ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no <user>@127.0.0.1
+   # forces a password prompt even if SSH keys are set up (Networking journal Day 19),
+   # so you can deliberately fail the login to trigger the jail
+
+==========================================
+END OF SYSADMIN DAY 06 COMMAND SHEET
+==========================================
