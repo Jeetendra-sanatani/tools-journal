@@ -1,0 +1,63 @@
+==========================================
+SYSADMIN DAY 09 — NCDU
+Finding What's Eating Your Disk
+==========================================
+
+--- INSTALL ---
+sudo apt install -y ncdu
+ncdu --version
+
+--- THE PLAIN-TOOL VIEW (what ncdu improves on) ---
+df -h                                   # space per filesystem (Used / Avail / Use%)
+df -i                                    # INODES per filesystem (full of tiny files = "disk full" with space free)
+du -sh <folder>                           # total size of one folder
+sudo du -h --max-depth=1 /var 2>/dev/null | sort -h | tail -8     # biggest folders one level down
+   # sort -h understands K / M / G, plain sort does not
+
+--- RUNNING NCDU ---
+ncdu <folder>                              # scan and explore interactively
+sudo ncdu -r -x /var/log                    # SAFE form for system folders:
+   # -r   read-only: switches off the delete feature (-rr also blocks the shell key)
+   # -x   stay on one filesystem, don't wander into other mounts
+ncdu -e <folder>                            # extended info (modification times, etc.)
+ncdu --exclude '*.iso' <folder>              # skip a pattern
+
+--- KEYS INSIDE NCDU ---
+Up / Down (or k / j)     move the cursor
+Enter or Right            open the selected folder
+Left (or h)                go back up
+s                           sort by size
+n                           sort by name
+g                           toggle graph / percentage display
+a                           toggle apparent size vs real disk usage
+i                           info about the selected item
+d                           DELETE the selected item (asks to confirm - only in your own lab folder!)
+r                           re-scan the current folder
+?                           help
+q                           quit
+
+--- SAVE A SCAN, VIEW IT LATER ---
+sudo ncdu -r -x -o /tmp/ncdu-var.json /var       # scan as root, save to a file
+ncdu -f /tmp/ncdu-var.json                         # open the saved scan, no root, no re-scan
+
+--- THE "DELETED BUT STILL OPEN" TRAP (Day 02 lsof, seen with disk space) ---
+sleep 600 < ~/ncdu-lab/big.bin &                    # a process holding a file open
+HOLDER=$!
+rm ~/ncdu-lab/big.bin                                # file gone from the folder, space NOT freed
+df -h ~ | tail -1                                     # Used has not dropped
+sudo lsof +L1 | grep big.bin                          # +L1 = open files that are deleted (link count < 1)
+ls -l /proc/$HOLDER/fd | grep big.bin                  # shows "(deleted)"
+kill $HOLDER                                           # process lets go -> space is freed
+   # du/ncdu only see files that still have a path; df counts everything actually used.
+   # When df says "full" but du/ncdu can't find the files, run lsof +L1.
+
+--- CONNECTION TO DAY 07 ---
+# Real logs in /var/log are the usual hog. logrotate keeps them bounded (rotate N, compress, size),
+# and copytruncate / postrotate+reopen is what prevents the deleted-but-open trap above.
+
+--- CLEAN UP AFTER THE LAB ---
+rm -rf ~/ncdu-lab /tmp/ncdu-var.json
+
+==========================================
+END OF SYSADMIN DAY 09 COMMAND SHEET
+==========================================
