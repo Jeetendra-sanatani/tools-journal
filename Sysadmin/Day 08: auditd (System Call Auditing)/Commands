@@ -1,0 +1,77 @@
+==========================================
+SYSADMIN DAY 08 — AUDITD
+System Call Auditing
+==========================================
+
+--- INSTALL & STATUS ---
+sudo apt install -y auditd
+sudo systemctl enable --now auditd         # start now AND on every future boot
+sudo systemctl status auditd
+sudo auditctl -s                             # status of the audit system (enabled 1 = on)
+sudo auditctl -l                              # list active rules ("No rules" if none)
+
+--- KEY FILES ---
+/var/log/audit/audit.log           # where audit events are written (root only)
+/etc/audit/auditd.conf              # the daemon's own settings (log size, how many to keep)
+/etc/audit/rules.d/*.rules           # PERMANENT rules, loaded at boot by augenrules
+
+--- FILE WATCH RULES (-w) ---
+sudo auditctl -w /path/to/file -p wa -k mykey
+   # -w  path to watch
+   # -p  which actions to log: r = read, w = write, x = execute, a = attribute change (chmod/chown)
+   # -k  a label ("key") so you can search for just these events later
+sudo auditctl -w /path/to/dir -p wa -k mykey     # a directory works too (watches everything inside)
+
+--- SYSCALL RULES (-a) — more powerful, more noise ---
+sudo auditctl -a always,exit -F arch=b64 -S execve -k all-exec
+   # log every execve (program start). Compare to Day 03: strace -e trace=execve, but system-wide
+   # careful: on a busy machine this produces huge amounts of log - read-only concept for the lab
+
+--- REMOVING RULES ---
+sudo auditctl -d ...               # delete one rule (same arguments as when it was added)
+sudo auditctl -D                    # delete ALL active rules
+   # NEVER: auditctl -e 2         locks the config until reboot - you could not remove rules
+
+--- SEARCHING EVENTS ---
+sudo ausearch -k mykey -i                # events with your key, -i = translate IDs into names
+sudo ausearch -k mykey -i -ts today       # only today's events
+sudo ausearch -f secret.txt                # events touching a given file name
+sudo ausearch -ua 1000 -i                   # events by a given audit user ID
+
+--- REPORTS ---
+sudo aureport --summary                  # overall summary of the audit log
+sudo aureport -k --summary                # events per key
+sudo aureport -f -i                        # file events
+sudo aureport -x --summary                 # events per executable
+sudo aureport --auth --summary              # authentication events
+
+--- READING ONE EVENT ---
+type=SYSCALL    the system call (syscall=openat, chmod, ...), success=yes/no, who (uid, auid), what (comm, exe)
+type=PATH       the file involved (name=...)
+type=CWD        the working directory at that moment
+uid             the user ID the process ran as (root after sudo)
+auid            the AUDIT user ID: set at login, NOT changed by sudo/su - "who really did this"
+key=            the -k label you gave the rule
+
+--- MAKING RULES PERMANENT ---
+sudo tee /etc/audit/rules.d/lab.rules << 'EOF'
+-w /tmp/audit-lab/secret.txt -p wa -k lab-secret
+EOF
+sudo augenrules --load                      # merge rules.d/*.rules and load them
+sudo auditctl -l                             # confirm
+   # rules added only with auditctl are lost on reboot (same idea as plain iptables on Day 05)
+
+--- AUDIT LOG ROTATION (auditd handles its own) ---
+grep -E '^(log_file|max_log_file|num_logs|max_log_file_action)' /etc/audit/auditd.conf
+sudo ls -lh /var/log/audit/
+   # max_log_file = size in MB before rotating, num_logs = how many old files to keep
+
+--- CLEAN UP AFTER THE LAB ---
+sudo auditctl -D
+sudo rm -f /etc/audit/rules.d/lab.rules
+sudo augenrules --load
+rm -rf /tmp/audit-lab
+
+==========================================
+END OF SYSADMIN DAY 08 COMMAND SHEET
+==========================================
