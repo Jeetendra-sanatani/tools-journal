@@ -1,216 +1,251 @@
-# 🔐 Sysadmin Day 05: iptables Part 2 (Logging, NAT, Saving Rules)
+# 🚫 Sysadmin Day 06: fail2ban (Auto-Blocking Brute-Force Attempts)
 
 <p align="center">
-  <img src="https://img.shields.io/badge/sysadmin-day_05-blue?style=for-the-badge" alt="Day 05"/>
-  <img src="https://img.shields.io/badge/tool-iptables-orange?style=for-the-badge" alt="Tool"/>
+  <img src="https://img.shields.io/badge/sysadmin-day_06-blue?style=for-the-badge" alt="Day 06"/>
+  <img src="https://img.shields.io/badge/tool-fail2ban-orange?style=for-the-badge" alt="Tool"/>
   <img src="https://img.shields.io/badge/level-beginner-yellow?style=for-the-badge" alt="Level"/>
   <img src="https://img.shields.io/badge/lab-Kali_Linux-black?style=for-the-badge" alt="Lab"/>
 </p>
 
-> Day 04 found a machine with real ufw and Docker rules already running. Today's lab was written for a clean test VM — so the more valuable thing wasn't following it literally, it was adapting it safely for a machine with live rules actually worth protecting. 🔐
+> The lab said to ban myself with three wrong passwords. The jail stayed at zero, and that turned out to be the most interesting result of the day: fail2ban is built to protect the admin from exactly this kind of self-inflicted lockout. 🔐
 
 ---
 
-## 🏆 Day 04 Recap — ufw and Docker Own the Real Chains
+## 🏆 Day 05 Recap — iptables Chains, Logging and Saved Rules
 
-`iptables -L` on this machine never shows plain ACCEPT/DROP rules directly in `INPUT` — every rule is a jump into a `ufw-*` chain, and Docker adds 6 more chains into `FORWARD` for container networking. The `nat` table already had live `MASQUERADE` and `DNAT` rules from Docker's own port-publishing, a preview of today's NAT topic, already running before any manual rule was added.
+Day 05 showed that `ufw` and Docker already own the real `INPUT`/`FORWARD` chains on this machine, that `LOG` only records and never blocks by itself, and that a saved ruleset can be validated safely with `iptables-restore --test`. Today's tool builds on that directly: when fail2ban blocks an IP, the block is just one more firewall chain.
 
 ---
 
 ## 🎯 Mission Briefing
 
-Four things were planned: logging, NAT, save/restore, and a base firewall script. All four happened, but two of them were deliberately adapted once it became clear this isn't a disposable lab VM — it's a machine with Docker containers and a working `ufw` setup actually depending on its current rules.
-
 ```
-🔐 MISSION: Logging, NAT, Persistence, Base Policy
+🚫 MISSION: Automate the Brute-Force Investigation
 ──────────────────────────────────────────
-[x] Log traffic with LOG, confirm it doesn't block anything by itself
-[x] Read the real NAT table from a second angle (-S instead of -L -v -n)
-[~] Save rules AND validate a restore, safely, WITHOUT an actual flush+restore cycle
-[~] Check the "base firewall" status: found ufw already provides it, didn't build a new one on top
+[x] Check the starting state and read the default numbers
+[x] Enable the sshd jail through jail.local
+[x] Send 3 failed SSH logins and read what the jail counted
+[x] Run unbanip and learn what its return value means
 ──────────────────────────────────────────
-STATUS: Sysadmin Day 05 — Done, adapted sensibly for a live system
+STATUS: Sysadmin Day 06 — Done, plus a real discovery about how fail2ban treats localhost
 ```
 
 ---
 
 ## ⚡ Quick Theory
 
-**`LOG` really is just a logger.** It writes a kernel log line and lets the packet continue to whatever rule comes next in the chain — if nothing after it blocks the traffic, the traffic goes through completely normally, logged but untouched.
+**fail2ban is the Linux journal Day 28 investigation, automated.** Instead of manually running `grep "Failed password" | sort | uniq -c`, fail2ban watches a log source, counts failures per IP, and acts when a threshold is crossed.
 
-**Loopback traffic is seen twice by `INPUT`.** A ping to `127.0.0.1` isn't one packet — the echo request travels out over `lo` and back in as "input," and the echo reply the kernel generates does the same thing in the other direction. Anything matching ICMP on `lo` in the `INPUT` chain sees both halves of every round trip, so a counter can show twice the number of pings sent.
+**Three numbers define a jail.** `maxretry` failures within `findtime` get an IP banned for `bantime`. With the defaults on this machine (`maxretry = 5`, `findtime = 10m`, `bantime = 10m`): 5 failures within 10 minutes means a 10-minute ban.
 
-**There's a 4th table beyond `filter`/`nat`/`mangle`: `raw`.** It's checked before connection tracking even happens, and it's where Docker adds rules that silently `DROP` anyone trying to reach a container's IP directly from outside its own bridge interface — a defense that only makes published ports reachable, not every port on every container.
+**Never edit `jail.conf`.** It is overwritten on package updates. Custom settings go in `jail.local`, which fail2ban reads on top of `jail.conf` and merges.
 
-**`iptables-restore --test` validates without touching anything live.** It parses a saved rules file and reports whether it WOULD apply cleanly, without actually loading it. On a machine where the current rules are genuinely doing work (unlike a disposable test rule), that's a much safer way to confirm a backup is good than actually flushing and reloading.
+**A ban is a real firewall rule.** With the iptables-based action, fail2ban inserts its own chain (`f2b-<jail>`) and adds one rule per banned IP. On systems configured for nftables, the same rule lives in an nft table instead (`sudo nft list ruleset` shows it).
+
+**The default block type is REJECT.** A banned client gets an immediate "Connection refused" instead of hanging, which is the opposite of the silent `DROP` behaviour from Day 04.
+
+**fail2ban reads the journal.** The status line `Journal matches: _SYSTEMD_UNIT=ssh.service + _COMM=sshd` shows it pulling SSH events straight from the systemd journal, not only from log files.
+
+**`ignoreip` protects the admin.** The shipped default (`ignoreip = 127.0.0.1/8 ::1`) tells fail2ban to never count or ban localhost. Real servers usually add a trusted office or management IP here too.
+
+**Bans survive restarts.** fail2ban keeps its ban history in an SQLite database (usually `/var/lib/fail2ban/fail2ban.sqlite3`) and re-applies bans that haven't expired yet when the service starts again. The firewall rules themselves live in memory, like any iptables rule from Day 05, which is why that re-apply step exists.
+
+**`unbanip` cleans up both sides.** It removes the ban record and the firewall rule together, and returns how many addresses it actually unbanned.
 
 ---
 
 ## 💻 Lab: Commands + My Real Output
 
-*(Machine: Kali Linux, user `ruin`, continuing in `/usr/share/wordlists`)*
+*(Machine: Kali Linux, user `ruin`, working from `~/Desktop/github`)*
 
-### 📝 Logging — proving LOG alone doesn't block
+### 📋 Step 0 + Part A — Starting state and the default numbers
 ```bash
-$ sudo iptables -I INPUT 1 -i lo -p icmp -j LOG --log-prefix "LAB-ICMP: " --log-level 4
+$ sudo apt install fail2ban -y
+fail2ban is already the newest version (1.1.1-1).
+...
+Summary:
+  Upgrading: 0, Installing: 0, Removing: 0, Not Upgrading: 354
 
-$ ping -c 4 127.0.0.1
-64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.109 ms
-64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.055 ms
-64 bytes from 127.0.0.1: icmp_seq=3 ttl=64 time=0.053 ms
-64 bytes from 127.0.0.1: icmp_seq=4 ttl=64 time=0.050 ms
---- 127.0.0.1 ping statistics ---
-4 packets transmitted, 4 received, 0% packet loss, time 3053ms
+$ sudo fail2ban-client status
+2026-10-21 15:53:42,645 fail2ban  [271064]: ERROR  Failed to access socket path: /var/run/fail2ban/fail2ban.sock. Is fail2ban running?
 ```
-No `DROP` rule was added this time — on purpose. This isolates exactly what `LOG` does on its own: all 4 pings got through with 0% loss, while still being recorded.
-
-```bash
-$ sudo journalctl -k --since "5 minutes ago" | grep "LAB-ICMP"
-Oct 17 13:35:11 Devil kernel: LAB-ICMP: IN=lo OUT= ... SRC=127.0.0.1 DST=127.0.0.1 ... PROTO=ICMP ... ID=29452 SEQ=1
-Oct 17 13:35:11 Devil kernel: LAB-ICMP: IN=lo OUT= ... SRC=127.0.0.1 DST=127.0.0.1 ... PROTO=ICMP ... ID=29452 SEQ=1
-Oct 17 13:35:12 Devil kernel: LAB-ICMP: IN=lo OUT= ... ID=29452 SEQ=2
-Oct 17 13:35:12 Devil kernel: LAB-ICMP: IN=lo OUT= ... ID=29452 SEQ=2
-Oct 17 13:35:13 Devil kernel: LAB-ICMP: IN=lo OUT= ... ID=29452 SEQ=3
-Oct 17 13:35:13 Devil kernel: LAB-ICMP: IN=lo OUT= ... ID=29452 SEQ=3
-Oct 17 13:35:14 Devil kernel: LAB-ICMP: IN=lo OUT= ... ID=29452 SEQ=4
-Oct 17 13:35:14 Devil kernel: LAB-ICMP: IN=lo OUT= ... ID=29452 SEQ=4
-
-$ sudo dmesg | grep "LAB-ICMP" | tail -10
-(the same 8 lines, confirming journalctl -k and dmesg surface the exact same kernel log entries)
-
-$ sudo iptables -L INPUT -n -v --line-numbers
-num pkts bytes target in out source destination
-1      8   672 LOG    icmp -- lo * 0.0.0.0/0 0.0.0.0/0  LOG flags 0 level 4 prefix "LAB-ICMP: "
-2   1334  459K ufw-before-logging-input ...
-```
-8 log lines, not 4 — matching the `8 672` packet counter on the rule exactly. This is the loopback double-count from the theory above: each of the 4 pings produces one echo request AND one echo reply, and both legs cross `lo` and get caught by the same `INPUT` rule, so 4 pings become 8 logged packets.
+fail2ban was already installed, but the service wasn't running, so the client couldn't find its socket. Installing a service is not the same as running it (`sudo systemctl enable --now fail2ban` starts it now and on every boot).
 
 ```bash
-$ sudo iptables -D INPUT -i lo -p icmp -j LOG --log-prefix "LAB-ICMP: " --log-level 4
-$ sudo iptables -L INPUT -n -v --line-numbers
-num pkts bytes target
-1   1341  459K ufw-before-logging-input ...
+$ grep -E '^(bantime|findtime|maxretry)' /etc/fail2ban/jail.conf | head -5
+bantime  = 10m
+findtime = 10m
+maxretry = 5
+bantime  = 48h
+maxretry = 1
 ```
-Clean removal, back to the exact same `ufw-before-logging-input` as rule 1.
+The first three lines are the global defaults every jail inherits: **ban for 10 minutes, count failures over a 10-minute window, ban after 5 failures.** The last two (`48h`, `1`) aren't defaults. `head -5` kept reading further down the file and caught a different jail's own override, so a plain `grep | head` can't tell global defaults from per-jail settings.
 
-### 🌐 NAT — read from a different angle, nothing new applied
+### ⚙️ Part B — Enabling the sshd jail
 ```bash
-$ sudo iptables -t nat -S
--P PREROUTING ACCEPT
--P OUTPUT ACCEPT
--P POSTROUTING ACCEPT
--N DOCKER
--A PREROUTING -m addrtype --dst-type LOCAL -j DOCKER
--A OUTPUT ! -d 127.0.0.0/8 -m addrtype --dst-type LOCAL -j DOCKER
--A POSTROUTING -s 172.17.0.0/16 ! -o docker0 -j MASQUERADE
--A POSTROUTING -s 172.18.0.0/16 ! -o br-81243d49950f -j MASQUERADE
--A DOCKER -i docker0 -j RETURN
--A DOCKER -i br-81243d49950f -j RETURN
--A DOCKER -d 127.0.0.1/32 ! -i br-81243d49950f -p tcp -m tcp --dport 4222 -j DNAT --to-destination 172.18.0.2:4222
--A DOCKER ! -i br-81243d49950f -p tcp -m tcp --dport 3000 -j DNAT --to-destination 172.18.0.3:3000
--A DOCKER ! -i br-81243d49950f -p tcp -m tcp --dport 9458 -j DNAT --to-destination 172.18.0.3:9458
--A DOCKER -d 127.0.0.1/32 ! -i br-81243d49950f -p tcp -m tcp --dport 27017 -j DNAT --to-destination 172.18.0.4:27017
-```
-Same real Docker NAT setup confirmed again from Day 04, this time in `-S` format — the exact commands that would recreate every rule, rather than the table layout `-L -v -n` gives. The test `MASQUERADE` rule the lab offered as optional wasn't added, since there's nothing behind this machine to actually route for — reading the real rules already made the point.
+$ sudo fail2ban-client status sshd
+2026-10-21 15:55:08,754 fail2ban  [272500]: ERROR  Failed to access socket path: /var/run/fail2ban/fail2ban.sock. Is fail2ban running?
 
-### 💾 Save and restore — adapted for a live system
+$ sudo nano /etc/fail2ban/jail.local
+$ sudo systemctl restart fail2ban
+
+$ cat /etc/fail2ban/jail.local
+[sshd]
+enabled = true
+```
+Same socket error, because the service still wasn't running. After creating `jail.local` and restarting, the jail came up. This `jail.local` contains **only `enabled = true`**, so the lab's `maxretry = 3` / `findtime = 300` / `bantime = 600` lines were not applied and the defaults (`5` / `10m` / `10m`) stayed in force.
+
+### 🔨 Part C — Sending failed logins
 ```bash
-$ sudo iptables-save > ~/iptables-backup.rules
-$ ls -lh ~/iptables-backup.rules
--rw-r--r-- 1 ruin ruin 7.6K Oct 17 13:38 /home/ruin/iptables-backup.rules
-
-$ cat ~/iptables-backup.rules
-# Generated by iptables-save v1.8.13 (nf_tables) on Sat Oct 17 13:38:59 2026
-*raw
-:PREROUTING ACCEPT [1565:613371]
-:OUTPUT ACCEPT [0:0]
--A PREROUTING -d 172.18.0.2/32 ! -i br-81243d49950f -j DROP
--A PREROUTING -d 172.18.0.3/32 ! -i br-81243d49950f -j DROP
--A PREROUTING -d 172.18.0.4/32 ! -i br-81243d49950f -j DROP
--A PREROUTING -d 127.0.0.1/32 -i lo -p tcp -m tcp --dport 4222 -j DROP
--A PREROUTING -d 127.0.0.1/32 -i lo -p tcp -m tcp --dport 27017 -j DROP
-COMMIT
-*filter
-:INPUT DROP [806:47196]
-:FORWARD DROP [0:0]
-:OUTPUT ACCEPT [14:560]
-... (DOCKER*, ufw-* chain definitions, then their rules, then *nat matching what -S showed above)
-COMMIT
+$ sudo fail2ban-client status sshd
+Status for the jail: sshd
+├─ Filter
+│  ├─ Currently failed: 0
+│  ├─ Total failed:     0
+│  └─ Journal matches:  _SYSTEMD_UNIT=ssh.service + _COMM=sshd
+└─ Actions
+   ├─ Currently banned: 0
+   ├─ Total banned:     0
+   └─ Banned IP list:
 ```
-A real 7.6K backup, containing not just `filter`/`nat` but a `*raw` table too — one I hadn't accounted for in Day 04's theory. Docker uses it specifically to `DROP` any direct attempt to reach a container's own IP (`172.18.0.2/32`, `.3/32`, `.4/32`) from outside its own bridge interface, and to block direct loopback access to two of the published ports (`4222`, `27017`) except through the proper published path. `raw` runs before connection tracking even starts — it's the earliest point a packet can be judged.
+Jail active, clean slate: 0 failed, 0 banned.
 
 ```bash
-$ sudo iptables-restore --test < ~/iptables-backup.rules
+$ ssh fakeuser@127.0.0.1
+fakeuser@127.0.0.1's password:
+Permission denied, please try again.
+fakeuser@127.0.0.1's password:
+Permission denied, please try again.
+fakeuser@127.0.0.1's password:
+fakeuser@127.0.0.1: Permission denied (publickey,password).
+
+$ sudo fail2ban-client status sshd
+Status for the jail: sshd
+├─ Filter
+│  ├─ Currently failed: 0
+│  ├─ Total failed:     0
+│  └─ Journal matches:  _SYSTEMD_UNIT=ssh.service + _COMM=sshd
+└─ Actions
+   ├─ Currently banned: 0
+   ├─ Total banned:     0
+   └─ Banned IP list:
 ```
-(no output — `--test` stayed silent, which means the file parsed and would apply cleanly)
+I used a made-up user (`fakeuser`) instead of my real account, a deliberately safer choice for a test meant to get something blocked. Three wrong passwords were sent, SSH rejected all three, and the counters **didn't move**: still 0 failed, 0 banned.
 
-Rather than the lab's suggested `-F` (flush everything) followed by a real restore, this used `--test`, which checks that the saved file is valid and loadable WITHOUT actually touching the live ruleset. On a machine where `ufw` and Docker's rules are genuinely doing active work right now, that's a deliberately safer way to prove the backup is good — no window where the real firewall is briefly gone.
+Two separate things explain this:
 
-### 🧱 Base firewall — found it already exists
+1. **Why no ban:** the jail ran on the default `maxretry = 5` and only 3 attempts were made. Even if all 3 had been counted, 3 is below 5.
+2. **Why not even `Total failed: 3`:** a counted failure would show up in `Total failed` whatever the ban threshold is. The most likely explanation is the shipped `ignoreip` default, which exempts localhost, so failures from my own loopback address are skipped before they are counted. *(Most likely cause, not yet verified on this machine. To check: `sudo fail2ban-client get sshd ignoreip`, and look for an `Ignore 127.0.0.1` line in `sudo grep -i ignore /var/log/fail2ban.log`.)*
+
+### 🔓 Part D — Unbanning
 ```bash
-$ echo "═══ BASE FIREWALL STATUS ═══"
-sudo iptables -L INPUT -n -v
-sudo iptables -L OUTPUT -n -v
-sudo iptables -L FORWARD -n -v
-═══ BASE FIREWALL STATUS ═══
-Chain INPUT (policy DROP 818 packets, 47796 bytes)
- 1391  462K ufw-before-logging-input ...
- ... (the same ufw-* jump chain seen throughout)
+$ sudo fail2ban-client set sshd unbanip 127.0.0.1
+0
 
-Chain OUTPUT (policy ACCEPT 14 packets, 560 bytes)
- ... (ufw-before-output and friends)
-
-Chain FORWARD (policy DROP 0 packets, 0 bytes)
-  199  152K DOCKER-USER ...
-  199  152K DOCKER-FORWARD ...
-  ... (ufw-*-forward chains)
+$ sudo fail2ban-client status sshd
+Status for the jail: sshd
+├─ Filter
+│  ├─ Currently failed: 0
+│  ├─ Total failed:     0
+│  └─ Journal matches:  _SYSTEMD_UNIT=ssh.service + _COMM=sshd
+└─ Actions
+   ├─ Currently banned: 0
+   ├─ Total banned:     0
+   └─ Banned IP list:
 ```
-This is a status check of the CURRENT rules, not the lab's script actually applied — no new `-A INPUT -i lo -j ACCEPT` / `ESTABLISHED,RELATED` / `--dport 22` rules were added on top. What it shows instead is worth noting on its own: `INPUT`'s policy is already `DROP`, `FORWARD`'s is already `DROP`, `OUTPUT`'s is already `ACCEPT` — exactly the policy shape Part D's script was about to build from scratch. `ufw` is already running a default-deny firewall with its own allow-list underneath (`ufw-user-input` has the equivalent of the SSH and established-connection rules the lab script would have added). Building a second, parallel base firewall on top of an already-active one risked conflicting with it rather than adding anything new.
+The `0` means no address was unbanned, which matches the status output: the banned list was already empty. The command worked as designed; it just had nothing to remove.
+
+---
+
+## 🔬 Reference: What a Successful Ban Looks Like
+
+> ⚠️ **Not from my machine.** These blocks show the typical shape of fail2ban output when a ban does fire, using the documentation IP `192.0.2.10`. They are here as a reference for what to look for, not as my own captured output.
+
+**Jail status after a ban:**
+```
+Status for the jail: sshd
+├─ Filter
+│  ├─ Currently failed: 0
+│  ├─ Total failed:     3
+│  └─ Journal matches:  _SYSTEMD_UNIT=ssh.service + _COMM=sshd
+└─ Actions
+   ├─ Currently banned: 1
+   ├─ Total banned:     1
+   └─ Banned IP list:   192.0.2.10
+```
+
+**fail2ban's own chain (iptables action):**
+```
+Chain f2b-sshd (1 references)
+ pkts bytes target  prot opt in  out  source        destination
+    4   240 REJECT  all  --  *   *    192.0.2.10    0.0.0.0/0   reject-with icmp-port-unreachable
+    0     0 RETURN  all  --  *   *    0.0.0.0/0     0.0.0.0/0
+```
+
+**The decision in `/var/log/fail2ban.log`:**
+```
+fail2ban.filter   [PID]: INFO    [sshd] Found 192.0.2.10 - <timestamp>
+fail2ban.actions  [PID]: NOTICE  [sshd] Ban 192.0.2.10
+fail2ban.actions  [PID]: NOTICE  [sshd] Unban 192.0.2.10
+```
+
+**What the banned client experiences:** because the default block type is `REJECT`, a new SSH attempt fails immediately with `Connection refused` instead of hanging until a timeout (the Day 04 DROP-vs-REJECT difference, seen from the client's side).
+
+**After `unbanip`:** the address disappears from the banned list *and* from the `f2b-sshd` chain, so SSH prompts for a password again.
 
 ---
 
 ## 🧪 What I Actually Found
 
-- [x] `LOG` alone, with no `DROP` after it, let all 4 pings through at 0% loss while still recording every one
-- [x] The LOG rule's counter (`8 672`) was exactly double the ping count — both the request and reply legs of loopback ICMP hit the same `INPUT` rule
-- [x] `journalctl -k` and `dmesg` surfaced the identical 8 kernel log lines, confirming they're reading the same underlying log
-- [x] Re-confirmed the real Docker `nat` rules via `-S`, and chose not to add an unnecessary test rule
-- [x] Discovered a 4th table, `raw`, where Docker drops direct access to container IPs and two published ports except through their proper path
-- [x] Saved a real 7.6K rules backup and validated it with `iptables-restore --test`, deliberately skipping an actual flush+restore cycle on a system with live rules
-- [x] Confirmed `ufw` already implements the default-DROP-plus-allow-list pattern Part D's script was going to build — chose not to layer a second one on top
-- [ ] Lab's literal Part D script (`-A INPUT -i lo -j ACCEPT`, `ESTABLISHED,RELATED`, `--dport 22`) as NEW rules: not run, since the equivalent already exists via `ufw`
+- [x] fail2ban was installed but **not running**; `fail2ban-client` failed with a socket error until `systemctl restart fail2ban`
+- [x] Real defaults on this machine: `maxretry = 5`, `findtime = 10m`, `bantime = 10m`
+- [x] `grep | head -5` on `jail.conf` mixed global defaults with another jail's override (`48h`, `maxretry = 1`)
+- [x] The `sshd` jail reads from the systemd journal (`_SYSTEMD_UNIT=ssh.service + _COMM=sshd`)
+- [x] My `jail.local` had only `enabled = true`, so the lab's `maxretry = 3` was never applied
+- [x] 3 failed SSH logins to `127.0.0.1` produced **0 failed, 0 banned** in the jail status
+- [x] `unbanip` returned `0` because there was no ban to remove
 
 ---
 
 ## 🎯 Mini Challenges
 
-> **🥊 Challenge 1: Eight, Not Four**
-> The LOG rule's packet counter read `8 672` after exactly 4 pings. Walk through why the number is doubled, step by step.
+> **🥊 Challenge 1: Three Failures, Zero Counted**
+> After 3 wrong passwords the jail still showed `Total failed: 0`. The ban threshold alone can't explain that. What can?
 
 <details>
 <summary>My answer</summary>
 
-Every `ping` to `127.0.0.1` has two legs, and both travel over the loopback interface: the echo request going "out" and the echo reply coming back "in" are both, from the kernel's point of view, packets arriving on `lo`. A rule matching ICMP on `-i lo` in the `INPUT` chain sees both legs of every round trip, so 4 pings (4 requests + 4 replies) become 8 matched packets, which is exactly what the counter showed.
+The threshold (`maxretry`) only decides *when a ban happens*; it has nothing to do with whether a failure is counted in the first place. `Total failed: 0` means fail2ban never recorded the three failures at all. The most likely reason is `ignoreip`: the shipped defaults exempt `127.0.0.1`, so failures from my own loopback address are dropped before counting. A second, smaller possibility is timing, since fail2ban polls the journal with a short delay. That's why the next step is to check `fail2ban-client get sshd ignoreip` and the fail2ban log rather than assume.
 
 </details>
 
-> **🥊 Challenge 2: Backup Confirmed, Nothing Touched**
-> `iptables-restore --test` was used instead of an actual flush-then-restore. What does `--test` actually confirm, and what does it NOT confirm, compared to a real restore?
+> **🥊 Challenge 2: What the Default Numbers Say**
+> With `maxretry = 5`, `findtime = 10m`, `bantime = 10m`, describe the rule in one sentence, and say whether my 3 attempts could ever have triggered it.
 
 <details>
 <summary>My answer</summary>
 
-`--test` confirms the file is syntactically valid and that every rule in it refers to something that currently exists (chains, tables, matches) — in other words, that loading it WOULD succeed without errors. What it doesn't confirm is the actual runtime effect of applying it: whether traffic genuinely gets blocked or allowed as expected once the rules are live, and whether anything (like an existing connection) breaks during the moment of swapping rulesets. For a disposable test rule, a real flush+restore proves more; for a backup of a live system's rules, `--test` is the safer way to get most of that confidence without the risk.
+The rule is: "if one IP fails 5 times within 10 minutes, block it for 10 minutes." My 3 attempts couldn't have triggered it even if every one had been counted, because 3 is under the limit of 5. The lab's `maxretry = 3` would have, but those lines never made it into my `jail.local`.
 
 </details>
 
-> **🥊 Challenge 3: Building a Second Firewall on Top of the First**
-> The "base firewall status" check showed `ufw` already enforces default-DROP with an allow-list. What could have gone wrong if the lab's exact Part D script had been run anyway, adding a second set of loopback/established/SSH rules on top?
+> **🥊 Challenge 3: The Lonely `0`**
+> `unbanip 127.0.0.1` printed `0`. Is that an error?
 
 <details>
 <summary>My answer</summary>
 
-Nothing would necessarily break immediately, since both rule sets would mostly agree (allow loopback, allow established, allow SSH) — but it would leave two independent sources of truth managing overlapping decisions. If `ufw` were later changed through its own commands (`ufw allow`, `ufw deny`), the manually added rules sitting elsewhere in the chain wouldn't be touched by those commands, creating a setup where `ufw status` no longer reflects everything actually happening in `INPUT`. That's a maintenance trap: a future audit relying on `ufw`'s own view of things would miss rules that exist outside its management.
+No. The number is how many addresses were actually unbanned, so `0` means the command ran correctly but found no ban on that IP to remove. That matches the status output right before it, where the banned list was already empty. On a real ban, getting `1` back is a quick confirmation that the removal worked.
+
+</details>
+
+> **🥊 Challenge 4: Reboot Survival**
+> If a banned IP's ban is still running and the machine reboots, is the ban lost?
+
+<details>
+<summary>My answer</summary>
+
+The firewall rule itself is lost, because plain iptables rules live in memory (Day 05). But fail2ban stores its ban history in an SQLite database on disk and re-applies bans that haven't expired when the service starts again. So the ban comes back after the reboot, for whatever time is left on its `bantime`.
 
 </details>
 
@@ -218,32 +253,34 @@ Nothing would necessarily break immediately, since both rule sets would mostly a
 
 ## 🧩 Quick Brain Check
 
-1. Why did the LOG rule's packet count come out to exactly double the number of pings sent?
-2. What's the practical difference between `iptables-restore --test` and an actual `iptables-restore`?
-3. What is the `raw` table used for, and when does it run relative to `filter`?
-4. Why would building a brand-new base-firewall script on a machine where `ufw` is already enforcing a similar policy be worth reconsidering?
-5. What two places (one log source, one command) confirmed the exact same LOG entries today?
+1. Why did `fail2ban-client status` fail with a socket error right after installation?
+2. What do `maxretry`, `findtime` and `bantime` mean together in one sentence?
+3. Why must custom settings go in `jail.local` and not `jail.conf`?
+4. Why could `Total failed` stay at 0 even after 3 wrong SSH passwords?
+5. What does `unbanip` returning `0` mean?
+6. Why does a banned client get "Connection refused" instead of a hang?
 
 ---
 
 ## 🐛 Errors / Gotchas I Hit
 
-- No DROP rule was added alongside LOG this time, which turned out to be a cleaner test of LOG's actual behavior (pure logging, zero traffic impact) than the lab's original LOG+DROP combination would have shown.
-- The "base firewall" script wasn't actually applied as new rules — checking first revealed `ufw` already implements the same pattern, and adding a parallel, independently-managed rule set on top was judged not worth the maintenance risk.
-- The save/restore test used `--test` instead of a real flush+restore cycle, specifically because this machine's current rules (`ufw` + Docker) are live and doing real work, unlike a disposable rules file on a throwaway VM.
+- **Socket error on `fail2ban-client status`:** the service wasn't running. `systemctl restart fail2ban` fixed it (`systemctl enable --now fail2ban` also makes it start on every boot).
+- **`jail.local` was incomplete:** only `enabled = true` was saved. The three tuning lines from the lab were missing, so the defaults applied and the test threshold was 5, not 3.
+- **No ban on localhost:** counters stayed at 0 after 3 failed logins, most likely because fail2ban ignores `127.0.0.1` by default. A test that really bans needs the full `jail.local` (`maxretry = 3`) and either a different source address or localhost removed from `ignoreip`.
+- **`grep | head -5` is misleading on `jail.conf`:** it mixes the global defaults with per-jail overrides further down the file.
 
 ---
 
 ## 🔐 Security Relevance
 
-A disposable test rule flush is harmless on a clean lab machine, but the same action on a system with live container networking and an active firewall policy could briefly drop real protections — exactly the kind of judgment call a working sysadmin makes constantly: is this environment safe to experiment on directly, or does it need a non-destructive check first? The `raw` table's container-isolation rules are also a good defensive pattern worth remembering: publishing a port deliberately (via Docker's `-p`) is different from a container's IP being reachable on every other port by accident, and `raw`-table `DROP` rules are how that gap gets closed.
+fail2ban turns a manual log investigation into automatic defense, but today showed its safety-first design: it refuses by default to ban localhost, so a misconfigured test can't lock an admin out of their own machine. On a real server the same `ignoreip` list is where a trusted management IP gets added. The flip side for attackers: unlimited password guessing against SSH is exactly what this tool cuts off after a handful of tries, and a short default `bantime` is a speed bump, not a wall, which is why persistent offenders are usually handled with longer ban times.
 
 ---
 
 ## 🧠 Today's Takeaway
 
-`LOG` genuinely does nothing but log — proven cleanly by watching 4 pings sail through at 0% loss while still showing up, doubled, in the kernel log. A real system's current state is worth checking before applying a script written for a clean one: `ufw` was already doing most of what Day 05's "base firewall" intended to build from scratch, and the `raw` table turned out to be a whole extra layer neither Day 04 nor today's theory had planned for ahead of time.
+fail2ban follows one simple rule (`maxretry` failures within `findtime` means a `bantime` ban), enforced through a firewall chain it manages itself. Today's real results: the service has to be running, `jail.local` has to contain the numbers you actually want, and localhost is protected by default, so three failed logins to `127.0.0.1` left the jail at zero. That "failure" is the safety feature working.
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 06: fail2ban — auto-blocking brute-force attempts**
+⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 07: logrotate — log rotation & retention**
