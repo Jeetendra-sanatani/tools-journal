@@ -1,0 +1,51 @@
+==========================================
+SYSADMIN DAY 08 NOTES — auditd
+Date: 23-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- auditd is the kernel's "who did what" recorder; events go to /var/log/audit/audit.log
+- A watch rule (-w path -p wa -k key) logs writes/attribute changes to one file; a syscall rule (-a always,exit -S ...)
+  logs every use of a system call, which is powerful but very noisy
+- -p letters: r read, w write, x execute, a attribute change; -k gives the rule a searchable label
+- ausearch -k <key> -i finds events by label; aureport gives summaries
+- uid is who the process ran as; auid is who really logged in - sudo changes uid but not auid
+- auditctl rules live in memory only; permanent ones go in /etc/audit/rules.d/ and load with augenrules --load
+- auditd rotates its own log (max_log_file / num_logs in auditd.conf)
+- Never auditctl -e 2 casually: it locks the audit config until reboot
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] install + enable auditd, auditctl -s and -l
+[ ] auditctl -w on my own test file, then a write and a chmod
+[ ] ausearch -k lab-secret -i to read the events
+[ ] writing to the file via sudo and comparing uid vs auid
+[ ] watching execution of whoami (-p x)
+[ ] aureport --summary / -k --summary
+[ ] checking auditd.conf log rotation settings
+[ ] making a rule permanent with rules.d + augenrules, then cleaning up
+
+paste or describe what you saw :
+$ sudo ausearch -k lab-secret -i | tail -40
+>
+
+$ sudo ausearch -k lab-secret -i | grep -E "auid=|uid=" | tail -4  (after the sudo write)
+>
+
+$ sudo aureport -k --summary
+>
+
+
+YOUR OBSERVATIONS:
+- How many events did one write + one chmod produce, and which syscall names appeared: 
+- uid vs auid after the sudo write, and why they differ: 
+- How many events did two whoami runs produce: 
+- max_log_file / num_logs values, and how that compares with logrotate from Day 07: 
+- Why a plain auditctl rule disappears on reboot but a rules.d one does not: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+
+
+TOMORROW'S TOPIC: Sysadmin Day 09 — ncdu (finding what's eating your disk)
+==========================================
