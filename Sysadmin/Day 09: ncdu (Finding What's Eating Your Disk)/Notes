@@ -1,0 +1,50 @@
+==========================================
+SYSADMIN DAY 09 NOTES — ncdu
+Date: 23-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- ncdu is du with an interactive screen: scan, sort by size, step into folders until you find the hog
+- Safe habit on system folders: ncdu -r -x (read-only so d can't delete, one filesystem only)
+- Keys: s sort size, n sort name, g graph, i info, d delete (only in my own lab folder), q quit
+- A scan can be saved with -o and opened later with -f, so root can scan and I can view without root
+- df -h shows space per filesystem, df -i shows inodes - a disk can be full of tiny files with space free
+- du/ncdu only see files that still have a path; df counts everything actually used
+- A deleted-but-still-open file (Day 02 lsof) keeps using space: df stays high, ncdu can't see it,
+  sudo lsof +L1 finds it, and the space returns when the process lets go
+- Logs in /var/log are the classic hog, and logrotate (Day 07) is what keeps them bounded
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] install ncdu, df -h, df -i
+[ ] du --max-depth=1 | sort -h on /var
+[ ] sudo ncdu -r -x /var/log and reading the biggest items
+[ ] building ~/ncdu-lab and exploring it with ncdu
+[ ] deleting a big file from inside ncdu (lab folder only)
+[ ] (bonus) saving a scan with -o and opening it with -f
+[ ] the deleted-but-open trap: rm, df, lsof +L1, kill, df again
+
+paste or describe what you saw :
+$ sudo du -h --max-depth=1 /var 2>/dev/null | sort -h | tail -8
+>
+
+$ sudo ncdu -r -x /var/log  (the biggest items on screen)
+>
+
+$ df -h ~ | tail -1   (before rm / after rm / after kill)
+>
+
+$ sudo lsof +L1 | grep big.bin
+>
+
+
+YOUR OBSERVATIONS:
+- Fullest filesystem (Use%) and free space on the one holding my home folder: 
+- Biggest item in /var/log, and whether a logrotate rule would apply to it: 
+- Any .gz or numbered rotated files in /var/log, and what that says about rotation: 
+- Why small/ with 200 files was barely visible in size: 
+- "Used" before rm / right after rm / after kill: 
+- Why ncdu couldn't show the deleted file, and which tool could: 
+
+
+TOMORROW'S TOPIC: Sysadmin Day 10 — Capstone: mini server hardening & audit
+==========================================
