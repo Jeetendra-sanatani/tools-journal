@@ -1,0 +1,3 @@
+# generated audit reports contain open ports, accounts and services of the machine
+reports/
+*.report.md
