@@ -1,0 +1,71 @@
+==========================================
+SYSADMIN DAY 10 NOTES — Capstone: Mini Server Hardening & Audit
+Date: 24-10-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- A sysadmin's loop: what's exposed -> what blocks it -> what stops brute force -> who's watching -> is it housekept
+- ss / lsof show what is listening; 0.0.0.0 means reachable from the network, 127.0.0.1 only from this machine
+- Reading the firewall (ufw status, iptables -S) is safe; changing a live ufw + Docker firewall is not a casual step
+- fail2ban banip with a documentation address (192.0.2.10) gives a real ban without touching localhost's ignore list
+- A ban shows up in three places: jail status, the firewall chain, and the fail2ban log - unban cleans both sides
+- auditd with auid tells me who REALLY changed a security file, even through sudo
+- logrotate and ncdu/df keep the logs from today's tools from quietly filling the disk
+- Every tool from Days 01-09 fits one workflow: each answers one question about the machine
+
+COMMANDS / ACTIONS I PRACTICED:
+[ ] pre-flight: systemctl is-active, enable --now, tmux session
+[ ] ss -tulpn and lsof -i | grep LISTEN
+[ ] ufw status verbose and iptables -S (read only)
+[ ] fail2ban jail check, manual banip, firewall chain, log line, unbanip
+[ ] auditd watch on jail.local, chmod trigger, ausearch -k, watch removed
+[ ] logrotate config + dry run for fail2ban, du/df/ncdu on /var/log
+[ ] (bonus) copytruncate demo with a running writer
+[ ] filled in the hardening scorecard
+
+paste or describe what you saw :
+$ sudo ss -tulpn
+>
+
+$ sudo fail2ban-client status sshd  (after banip)
+>
+
+$ sudo iptables -L -n -v | grep -A 5 f2b-sshd   (or the nft output)
+>
+
+$ sudo ausearch -k f2b-config -i | tail -20
+>
+
+$ sudo logrotate -d /etc/logrotate.d/fail2ban 2>&1 | tail -15
+>
+
+
+HARDENING SCORECARD:
+Area                 | Status (OK / needs work) | Evidence in one line
+---------------------+--------------------------+---------------------------------
+Exposed ports        |                          |
+Firewall             |                          |
+Brute-force defense  |                          |
+Audit trail          |                          |
+Log retention        |                          |
+Disk health          |                          |
+Workflow (tmux)      |                          |
+
+WEAKEST SPOT ON THIS MACHINE, AND THE FIRST THING YOU SHOULD FIX (two sentences):
+- 
+
+
+YOUR OBSERVATIONS:
+- Listening ports and which are reachable from outside: 
+- ufw state and default incoming policy: 
+- Firewall rule target for the banned address (REJECT / DROP), and what unbanip printed: 
+- The auditd event: syscall, uid, auid, file: 
+- Whether fail2ban's log has a logrotate config, and how many copies it keeps: 
+- Biggest thing in /var/log and free space on /: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+
+TOMORROW'S TOPIC: Phase 3 — Pentesting Day 01 (theHarvester)
+==========================================
