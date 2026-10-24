@@ -1,0 +1,78 @@
+==========================================
+SYSADMIN DAY 10 — CAPSTONE
+Mini Server Hardening & Audit
+==========================================
+
+--- PRE-FLIGHT (Day 06's lesson: installed is not the same as running) ---
+systemctl is-active ssh auditd fail2ban
+sudo systemctl enable --now auditd fail2ban
+command -v tmux ncdu
+
+--- TMUX WORKSPACE (Day 01) ---
+tmux new -s capstone                  # one session for the whole capstone
+   # Ctrl-b %   split left/right      Ctrl-b "   split top/bottom
+   # Ctrl-b o   switch pane            Ctrl-b d   detach (session keeps running)
+tmux attach -t capstone                # come back to it
+
+--- INVENTORY: WHAT'S EXPOSED? (Day 02, 04, 05) ---
+sudo ss -tulpn                          # all listening TCP/UDP sockets + owning program
+sudo lsof -i -P -n | grep LISTEN         # same idea through lsof
+   # 0.0.0.0 or *   = reachable from the network      127.0.0.1 = this machine only
+sudo ufw status verbose                   # ufw state, default policies, allowed ports (read only)
+sudo iptables -S | head -20                # the raw rules (read only - do NOT change them today)
+
+--- BRUTE-FORCE DEFENSE: A SAFE REAL BAN (Day 06) ---
+sudo fail2ban-client status sshd
+sudo fail2ban-client set sshd banip 192.0.2.10        # ban a documentation address by hand
+sudo fail2ban-client set sshd unbanip 192.0.2.10        # unban it (prints how many were unbanned)
+sudo iptables -L -n -v | grep -A 5 f2b-sshd              # fail2ban's chain (iptables action)
+sudo nft list ruleset | grep -B 3 -A 6 f2b                # same rule on nftables-based setups
+sudo tail -f /var/log/fail2ban.log                         # live ban/unban lines
+sudo journalctl -u fail2ban -f                              # fallback if there is no log file
+   # 192.0.2.0/24 is reserved for documentation - it belongs to no real machine
+   # a manual ban works even though localhost is on fail2ban's ignore list
+
+--- AUDIT TRAIL (Day 08) ---
+sudo auditctl -w /etc/fail2ban/jail.local -p wa -k f2b-config    # watch the security config
+sudo chmod 644 /etc/fail2ban/jail.local                            # a harmless trigger
+sudo ausearch -k f2b-config -i | tail -20                           # read the events
+sudo auditctl -W /etc/fail2ban/jail.local -p wa -k f2b-config       # remove that one watch
+   # key fields: syscall, uid (who it ran as), auid (who REALLY logged in), comm/exe, name=
+
+--- HOUSEKEEPING (Day 07, 09) ---
+ls /etc/logrotate.d/ | grep -E 'audit|fail2ban|ufw|rsyslog'
+cat /etc/logrotate.d/fail2ban
+sudo logrotate -d /etc/logrotate.d/fail2ban 2>&1 | tail -15       # dry run, changes nothing
+sudo du -sh /var/log/audit /var/log/fail2ban.log /var/log/journal 2>/dev/null
+df -h / | tail -1
+sudo ncdu -r -x /var/log                                            # read-only, one filesystem
+
+--- BONUS: COPYTRUNCATE WITH A WRITER STILL RUNNING (finishing Day 07) ---
+sudo tee /etc/logrotate.d/myapp-test << EOF
+$HOME/logrotate-lab/myapp.log {
+    su $USER $USER
+    size 1k
+    rotate 3
+    compress
+    missingok
+    notifempty
+    copytruncate
+}
+EOF
+sudo logrotate -vf /etc/logrotate.d/myapp-test
+   # config must be ROOT-owned (written with sudo tee), and su USER GROUP is needed
+   # when the log lives in a folder your own user owns
+
+--- THE ONE-LINE MENTAL MODEL ---
+# What's exposed? -> what blocks it? -> what stops brute force? -> who's watching? -> is it housekept?
+#   ss/lsof            ufw/iptables         fail2ban               auditd            logrotate/ncdu/df
+
+--- CLEAN UP AFTER THE LAB ---
+sudo fail2ban-client set sshd unbanip 192.0.2.10
+sudo auditctl -W /etc/fail2ban/jail.local -p wa -k f2b-config
+sudo rm -f /etc/logrotate.d/myapp-test
+rm -rf ~/logrotate-lab
+
+==========================================
+END OF SYSADMIN DAY 10 COMMAND SHEET
+==========================================
