@@ -209,13 +209,14 @@ check_ssh() {
   local cfg root pw empty port notes="" sshd_err="$TMP/sshd.err"
   cfg=$(sshd -T 2>"$sshd_err")
   local keys
-  keys=$(printf '%s\n' "$cfg" | grep -E '^(port|permitrootlogin|passwordauthentication|pubkeyauthentication|permitemptypasswords|maxauthtries|x11forwarding) ')
+  keys=$(printf '%s\n' "$cfg" | grep -iE '^(port|permitrootlogin|passwordauthentication|pubkeyauthentication|permitemptypasswords|maxauthtries|x11forwarding|usepam) ')
   if [ -n "$keys" ]; then printf '%s\n' "$keys" | block; fi
 
-  root=$(printf '%s\n' "$cfg"  | awk '$1=="permitrootlogin" {print $2}')
-  pw=$(printf '%s\n' "$cfg"    | awk '$1=="passwordauthentication" {print $2}')
-  empty=$(printf '%s\n' "$cfg" | awk '$1=="permitemptypasswords" {print $2}')
-  port=$(printf '%s\n' "$cfg"  | awk '$1=="port" {print $2; exit}')
+  # sshd -T prints lowercase keys on some versions and CamelCase (Port, UsePAM) on others, so compare in lowercase
+  root=$(printf '%s\n' "$cfg"  | awk 'tolower($1)=="permitrootlogin" {print tolower($2); exit}')
+  pw=$(printf '%s\n' "$cfg"    | awk 'tolower($1)=="passwordauthentication" {print tolower($2); exit}')
+  empty=$(printf '%s\n' "$cfg" | awk 'tolower($1)=="permitemptypasswords" {print tolower($2); exit}')
+  port=$(printf '%s\n' "$cfg"  | awk 'tolower($1)=="port" {print $2; exit}')
 
   if [ -z "$port" ]; then
     say "sshd -T gave no usable settings. First lines of its output and errors:"
@@ -229,7 +230,9 @@ check_ssh() {
   [ "$pw" = "yes" ]    && notes="$notes password logins enabled (keys + fail2ban recommended);"
 
   notes="${notes# }"; notes="${notes%;}"
-  if [ -n "$notes" ]; then
+  if [ -z "$notes" ] && [ -z "$root" ] && [ -z "$pw" ]; then
+    row "SSH" INFO "port ${port}: root-login and password settings not listed by sshd -T (defaults apply; check /etc/ssh/sshd_config)"
+  elif [ -n "$notes" ]; then
     row "SSH" WARN "port ${port:-?}: ${notes}"
   elif [ -z "$cfg" ]; then
     row "SSH" INFO "could not read the sshd configuration"
