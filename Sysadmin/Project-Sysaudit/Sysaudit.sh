@@ -17,9 +17,11 @@ PATH="$PATH:/usr/sbin:/sbin:/usr/local/sbin"
 DISK_WARN=85          # warn when a filesystem (space or inodes) is this % full
 UPDATES_WARN=50       # warn when this many apt updates are pending
 BIGLOG_MB=100         # warn about any single file in /var/log bigger than this
+DELETED_MIN_MB=1      # only count deleted-but-open files at least this big (tiny ones are normal desktop noise)
 
 OUT=""
 STRICT=0
+DELETED_MIN_BYTES=$((DELETED_MIN_MB * 1048576))
 
 usage() {
   cat <<EOF
@@ -118,7 +120,7 @@ check_ports() {
   n_local=$((total - n_exposed))
 
   {
-    echo "Reachable beyond localhost (proto  local-address:port):"
+    echo "Listening beyond localhost (proto  local-address:port; the firewall may still block these):"
     if [ "$n_exposed" -gt 0 ]; then printf '%s\n' "$exposed" | sort -u; else echo "(none)"; fi
     echo
     echo "Local-only sockets (127.0.0.1 / ::1): $n_local"
@@ -136,9 +138,9 @@ check_ports() {
 
   risky=$(echo $risky)
   if [ -n "$risky" ]; then
-    row "Exposed ports" WARN "risky service port(s) reachable from the network: ${risky}"
+    row "Exposed ports" WARN "risky service port(s) listening beyond localhost: ${risky}"
   elif [ "$n_exposed" -gt 0 ]; then
-    row "Exposed ports" INFO "$n_exposed socket(s) reachable from the network, review the list"
+    row "Exposed ports" INFO "$n_exposed socket(s) listening beyond localhost, review the list (the firewall may still block them)"
   else
     row "Exposed ports" OK "nothing listens beyond localhost"
   fi
@@ -204,14 +206,23 @@ check_ssh() {
     return
   fi
 
-  local cfg root pw empty port notes=""
-  cfg=$(sshd -T 2>/dev/null)
-  printf '%s\n' "$cfg" | grep -E '^(port|permitrootlogin|passwordauthentication|pubkeyauthentication|permitemptypasswords|maxauthtries|x11forwarding) ' | block
+  local cfg root pw empty port notes="" sshd_err="$TMP/sshd.err"
+  cfg=$(sshd -T 2>"$sshd_err")
+  local keys
+  keys=$(printf '%s\n' "$cfg" | grep -E '^(port|permitrootlogin|passwordauthentication|pubkeyauthentication|permitemptypasswords|maxauthtries|x11forwarding) ')
+  if [ -n "$keys" ]; then printf '%s\n' "$keys" | block; fi
 
   root=$(printf '%s\n' "$cfg"  | awk '$1=="permitrootlogin" {print $2}')
   pw=$(printf '%s\n' "$cfg"    | awk '$1=="passwordauthentication" {print $2}')
   empty=$(printf '%s\n' "$cfg" | awk '$1=="permitemptypasswords" {print $2}')
   port=$(printf '%s\n' "$cfg"  | awk '$1=="port" {print $2; exit}')
+
+  if [ -z "$port" ]; then
+    say "sshd -T gave no usable settings. First lines of its output and errors:"
+    { [ -n "$cfg" ] && printf '%s\n' "$cfg" | head -5; head -5 "$sshd_err" 2>/dev/null; echo "(exit status of sshd -T may be non-zero)"; } | block
+    row "SSH" INFO "could not read settings from sshd -T (try: sudo sshd -T | head)"
+    return
+  fi
 
   [ "$root" = "yes" ]  && notes="$notes root login allowed;"
   [ "$empty" = "yes" ] && notes="$notes empty passwords allowed;"
@@ -362,9 +373,12 @@ check_disk() {
   du -ah /var/log 2>/dev/null | sort -rh | head -6 | block
 
   if have lsof && [ "$IS_ROOT" -eq 1 ]; then
-    deleted_open=$(lsof +L1 2>/dev/null | awk 'NR>1')
+    local all_deleted n_all
+    all_deleted=$(lsof +L1 2>/dev/null | awk 'NR>1')
+    n_all=$(printf '%s\n' "$all_deleted" | sed '/^$/d' | wc -l)
+    deleted_open=$(printf '%s\n' "$all_deleted" | awk -v min="$DELETED_MIN_BYTES" '$5=="REG" && $7+0 >= min && $0 !~ /\/memfd:/')
     n_deleted=$(printf '%s\n' "$deleted_open" | sed '/^$/d' | wc -l)
-    say "Deleted-but-still-open files (lsof +L1), the Day 02 trap: $n_deleted"
+    say "Deleted-but-still-open files (lsof +L1), the Day 02 trap: $n_all in total, $n_deleted of them at least ${DELETED_MIN_MB} MB (memfd and tiny desktop files are ignored)"
     if [ "$n_deleted" -gt 0 ]; then printf '%s\n' "$deleted_open" | head -10 | block; fi
   fi
 
@@ -375,7 +389,7 @@ check_disk() {
   if [ "${sp_pct:-0}" -ge "$DISK_WARN" ] || [ "${in_pct:-0}" -ge "$DISK_WARN" ]; then
     row "Disk health" WARN "$note, at or above the ${DISK_WARN}% threshold"
   elif [ "$n_deleted" -gt 0 ]; then
-    row "Disk health" WARN "$note; $n_deleted deleted-but-open file(s) holding space (sudo lsof +L1)"
+    row "Disk health" WARN "$note; $n_deleted deleted-but-open file(s) of ${DELETED_MIN_MB} MB or more holding space (sudo lsof +L1)"
   else
     row "Disk health" OK "$note"
   fi
