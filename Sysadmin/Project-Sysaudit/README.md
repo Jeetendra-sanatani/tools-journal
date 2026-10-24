@@ -44,8 +44,8 @@ Every status is one of: ✅ OK, ⚠️ WARN, ℹ️ INFO, ⏭️ SKIP (the check
 ## 🚀 Quick Start
 
 ```bash
-git clone https://github.com/<your-username>/tools-journal.git
-cd tools-journal/Sysadmin/Project-sysaudit
+git clone https://github.com/Jeetendra-sanatani/tools-journal.git
+cd tools-journal/Sysadmin/Project-Sysaudit
 
 sudo bash sysaudit.sh                       # full audit
 sudo bash sysaudit.sh --out my-report.md     # choose the report file
@@ -95,16 +95,27 @@ The report starts with a scorecard, followed by one section per check with the r
 
 ## 📸 My Run
 
-*(Add your own screenshots to the `screenshots/` folder with these names, or remove this section.)*
+Real run of `sudo bash sysaudit.sh` on my Kali VM.
 
-![Scorecard from my run](screenshots/01-scorecard.png)
-*The scorecard, system info and exposed ports from running `sudo bash sysaudit.sh` on my Kali VM.*
+**The scorecard**
 
-![Firewall, SSH, fail2ban and auditd sections from my run](screenshots/02-details.png)
-*The firewall, brute-force defense and audit trail sections.*
+![Scorecard from my run](Screenshots/01-scorecard.png)
 
-![Log retention, disk, accounts and updates sections from my run](screenshots/03-details-2.png)
-*The log retention, disk health, accounts, updates and services sections.*
+**System info and exposed ports** (`ss -tulnp` shows which program owns each port; Docker-published ports appear as `docker-proxy`)
+
+![System and exposed ports](Screenshots/02-details.png)
+
+**Exposed ports and the firewall** (`ufw` active, default deny incoming, only SSH allowed)
+
+![Exposed ports and firewall](Screenshots/02-details-2.png)
+
+**SSH, fail2ban, auditd and log retention** (fail2ban inactive, auditd running with no rules, and a logrotate config skipped for insecure permissions)
+
+![SSH, fail2ban, auditd, logrotate](Screenshots/02-details-4.png)
+
+**Disk health, accounts, updates and services**
+
+![Disk, accounts, updates, services](Screenshots/02-details-5.png)
 
 ## ⚙️ Thresholds
 
@@ -123,6 +134,7 @@ Four values at the top of the script can be changed:
 
 - **No `set -e`.** Many of the commands fail normally (a tool is missing, a service is off). Each check handles its own failure and reports it, instead of the whole script aborting.
 - **Parsing is simple on purpose.** `ss` output is split with `awk`; addresses starting with `127.` or `::1` count as local, everything else counts as reachable. A specific interface address (such as `10.0.2.15`) counts as reachable too.
+- **Key names are compared in lowercase.** `sshd -T` prints `port` on some versions and `Port` on others, so the SSH check ignores case. If the security settings aren't listed at all, the row says so instead of guessing.
 - **Root-only checks say so.** A skipped check is shown as SKIP with the reason, never silently dropped and never reported as OK.
 - **Exit codes:** `0` normally, `1` with `--strict` when there's at least one WARN, `2` for bad options.
 
@@ -143,11 +155,11 @@ Four values at the top of the script can be changed:
 ## 📂 Project Structure
 
 ```text
-Project-sysaudit/
+Project-Sysaudit/
 ├── README.md
 ├── sysaudit.sh          # the audit script
 ├── .gitignore           # keeps generated reports out of the repo
-├── screenshots/         # my own runs
+├── Screenshots/         # my own runs
 └── reports/             # generated reports (git-ignored)
 ```
 
