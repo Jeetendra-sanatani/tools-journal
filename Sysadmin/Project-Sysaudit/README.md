@@ -26,13 +26,13 @@
 | # | Check | What it looks at | Warns when | Learned on |
 | --- | --- | --- | --- | --- |
 | 1 | System | host, OS, kernel, uptime, who is running it | (info only) | — |
-| 2 | Exposed ports | `ss -tuln`: sockets reachable beyond `127.0.0.1` / `::1` | a risky service port is reachable (FTP, Telnet, SMB, RDP, MySQL, PostgreSQL, Redis, MongoDB, Docker API, and a few more) | Day 02 (lsof) |
+| 2 | Exposed ports | `ss -tuln`: sockets listening beyond `127.0.0.1` / `::1` (the firewall may still block them) | a risky service port listens beyond localhost (FTP, Telnet, SMB, RDP, MySQL, PostgreSQL, Redis, MongoDB, Docker API, and a few more) | Day 02 (lsof) |
 | 3 | Firewall | `ufw status`, `iptables -S` default policy (read only) | INPUT policy is ACCEPT, or no firewall tooling at all | Days 04-05 |
 | 4 | SSH daemon | `sshd -T`: port, root login, password logins, empty passwords | root login or empty passwords allowed, or password logins on | Day 06 context |
 | 5 | Brute-force defense | fail2ban service, jails, currently banned IPs | not installed, not running, or no jail enabled | Day 06 |
 | 6 | Audit trail | auditd service, `auditctl -s`, number of loaded rules | not installed, not running, or running with zero rules | Day 08 |
 | 7 | Log retention | logrotate configs, daily timer/cron, dry run errors, huge log files | no schedule, dry-run errors, or a log file over 100 MB | Day 07 |
-| 8 | Disk health | `df -h`, inode use, biggest items in `/var/log`, `lsof +L1` | a filesystem at or above 85%, or deleted-but-open files holding space | Days 02, 07, 09 |
+| 8 | Disk health | `df -h`, inode use, biggest items in `/var/log`, `lsof +L1` | a filesystem at or above 85%, or a deleted-but-open file of 1 MB or more holding space (tiny `memfd` and desktop files are ignored) | Days 02, 07, 09 |
 | 9 | Accounts | extra UID 0 accounts, empty passwords, sudo group members | an extra UID 0 account or an empty password | — |
 | 10 | Updates | `apt list --upgradable` | 50 or more pending updates | — |
 | 11 | Services | `systemctl --failed` | any failed unit | — |
@@ -82,7 +82,7 @@ The report starts with a scorecard, followed by one section per check with the r
 
 | Area | Status | Note |
 | --- | --- | --- |
-| Exposed ports | ℹ️ INFO | 3 socket(s) reachable from the network, review the list |
+| Exposed ports | ℹ️ INFO | 3 socket(s) listening beyond localhost, review the list (the firewall may still block them) |
 | Firewall | ✅ OK | ufw is active (iptables INPUT policy: DROP) |
 | SSH | ⚠️ WARN | port 22: password logins enabled (keys + fail2ban recommended) |
 | Brute-force defense | ✅ OK | active, 1 jail(s): sshd; currently banned: 0 |
@@ -98,22 +98,24 @@ The report starts with a scorecard, followed by one section per check with the r
 *(Add your own screenshots to the `screenshots/` folder with these names, or remove this section.)*
 
 ![Scorecard from my run](screenshots/01-scorecard.png)
-*The scorecard from running `sudo bash sysaudit.sh` on my Kali VM.*
+*The scorecard, system info and exposed ports from running `sudo bash sysaudit.sh` on my Kali VM.*
 
-![Evidence sections from my run](screenshots/02-details.png)
-*The evidence sections underneath: ports, firewall, fail2ban and auditd.*
+![Firewall, SSH, fail2ban and auditd sections from my run](screenshots/02-details.png)
+*The firewall, brute-force defense and audit trail sections.*
 
----
+![Log retention, disk, accounts and updates sections from my run](screenshots/03-details-2.png)
+*The log retention, disk health, accounts, updates and services sections.*
 
 ## ⚙️ Thresholds
 
-Three values at the top of the script can be changed:
+Four values at the top of the script can be changed:
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `DISK_WARN` | `85` | warn when a filesystem (space or inodes) is this % full |
 | `UPDATES_WARN` | `50` | warn when this many apt updates are pending |
 | `BIGLOG_MB` | `100` | warn about any single file in `/var/log` bigger than this |
+| `DELETED_MIN_MB` | `1` | only count deleted-but-open files at least this big |
 
 ---
 
@@ -129,6 +131,7 @@ Three values at the top of the script can be changed:
 ## ⚠️ Limitations (honest list)
 
 - The scorecard is a **set of heuristics, not a security verdict.** A green scorecard doesn't mean a machine is secure; a warning isn't always a problem (password logins on a lab VM are a judgement call).
+- "Listening beyond localhost" is not the same as "reachable from the internet": the exposed-ports check reads `ss` and doesn't combine it with the firewall rules. Ports published by Docker (they show up as `docker-proxy`) are a special case, because Docker adds its own firewall rules that `ufw`'s incoming rules don't always cover.
 - Risky-port detection uses a fixed list of well-known ports. A service on an unusual port isn't flagged as risky, only listed under reachable sockets.
 - The firewall check reads `ufw` and `iptables`. On Docker hosts, Docker adds its own rules, which the script doesn't interpret. On nftables-only setups it only points you to `nft list ruleset`.
 - The update count comes from the last `apt update`; if the package lists are stale, so is the number.
