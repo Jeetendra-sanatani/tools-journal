@@ -51,7 +51,7 @@ pie showData
 | Metric | Value |
 | --- | --- |
 | 📅 Phases planned | **5** |
-| 🎯 Current phase | **Pentesting** |
+| 🎯 Current phase | **Networking** |
 | 🗓️ Total days planned | **~80** |
 | 🧪 Practical focus | **80%** |
 | 🚦 Status | **In Progress** |
