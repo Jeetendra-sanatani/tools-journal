@@ -138,8 +138,8 @@ Each tool's folder contains:
 | Phase | Status | Link |
 | --- | --- | --- |
 | 1. Networking | ✅ Completed | [Networking/](./Networking/) |
-| 2. Sysadmin | 🔵 In Progress | [Sysadmin/](./Sysadmin/) |
-| 3. Pentesting | ⏳ Upcoming | — |
+| 2. Sysadmin | ✅ Completed | [Sysadmin/](./Sysadmin/) |
+| 3. Pentesting | 🔵 In Progress | [Pentesting/](./Pentesting/) |
 | 4. Cloud / DevOps | ⏳ Upcoming | — |
 | 5. Git Advanced | ⏳ Upcoming | — |
 
