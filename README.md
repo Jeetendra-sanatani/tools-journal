@@ -51,7 +51,7 @@ pie showData
 | Metric | Value |
 | --- | --- |
 | 📅 Phases planned | **5** |
-| 🎯 Current phase | **Networking** |
+| 🎯 Current phase | **Pentesting** |
 | 🗓️ Total days planned | **~80** |
 | 🧪 Practical focus | **80%** |
 | 🚦 Status | **In Progress** |
@@ -70,7 +70,7 @@ flowchart LR
 
     style A fill:#2ea043,color:#fff
     style B fill:#2ea043,color:#fff
-    style C fill:#30363d,color:#8b949e
+    style C fill:#2ea043,color:#fff
     style D fill:#30363d,color:#8b949e
     style E fill:#30363d,color:#8b949e
 ```
