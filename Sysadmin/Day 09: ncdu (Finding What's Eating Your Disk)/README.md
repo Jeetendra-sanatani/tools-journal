@@ -296,4 +296,4 @@ A full disk is an availability problem: logs that grow without limit can stop se
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 10: Capstone — mini server hardening & audit**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Day 10: Capstone — mini server hardening & audit**
