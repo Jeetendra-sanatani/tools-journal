@@ -317,4 +317,4 @@ A hardening review is mostly asking "is it actually on?" Inventory told me what 
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Phase 3 — Pentesting, Day 01: theHarvester**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Phase 3 — Pentesting, Day 01: theHarvester**
