@@ -266,4 +266,4 @@ Watching sensitive files (`/etc/passwd`, SSH configs, the fail2ban config from D
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 09: ncdu — finding what's eating your disk**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Day 09: ncdu — finding what's eating your disk**
