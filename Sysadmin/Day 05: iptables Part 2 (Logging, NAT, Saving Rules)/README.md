@@ -246,4 +246,4 @@ A disposable test rule flush is harmless on a clean lab machine, but the same ac
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 06: fail2ban — auto-blocking brute-force attempts**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Day 06: fail2ban — auto-blocking brute-force attempts**
