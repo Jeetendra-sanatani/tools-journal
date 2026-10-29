@@ -213,4 +213,4 @@ The real lesson of Day 01 wasn't "here's how windows and panes look" — it was 
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 02: lsof — list open files**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Day 02: lsof — list open files**
