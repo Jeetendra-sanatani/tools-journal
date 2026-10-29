@@ -275,4 +275,4 @@ logrotate's job is a rotation policy (`weekly`, `rotate 4`, `compress`) plus a r
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 08: auditd — system call auditing**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Day 08: auditd — system call auditing**
