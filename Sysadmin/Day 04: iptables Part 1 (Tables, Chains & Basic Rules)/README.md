@@ -262,4 +262,4 @@ The textbook version of iptables ("3 chains, add a rule, done") is the right sta
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 05: iptables Part 2 — logging, NAT, saving rules**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Day 05: iptables Part 2 — logging, NAT, saving rules**
