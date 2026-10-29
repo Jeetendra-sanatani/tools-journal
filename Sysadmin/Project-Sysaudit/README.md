@@ -111,11 +111,11 @@ Real run of `sudo bash sysaudit.sh` on my Kali VM.
 
 **SSH, fail2ban, auditd and log retention** (fail2ban inactive, auditd running with no rules, and a logrotate config skipped for insecure permissions)
 
-![SSH, fail2ban, auditd, logrotate](Screenshots/02-details-4.png)
+![SSH, fail2ban, auditd, logrotate](Screenshots/02-details-3.png)
 
 **Disk health, accounts, updates and services**
 
-![Disk, accounts, updates, services](Screenshots/02-details-5.png)
+![Disk, accounts, updates, services](Screenshots/02-details-4.png)
 
 ## ⚙️ Thresholds
 
