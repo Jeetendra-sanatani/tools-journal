@@ -193,4 +193,4 @@ Checking `lsof -i` before trusting that a port is free (or, defensively, auditin
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 03: strace — trace a program's system calls**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Day 03: strace — trace a program's system calls**
