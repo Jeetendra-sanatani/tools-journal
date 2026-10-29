@@ -218,4 +218,4 @@ Two errors that sound almost identical to a user — "permission denied" and "no
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 04: iptables Part 1 — tables, chains & basic rules**
+⬅️ [Back to Sysadmin index](/Sysadmin) | ➡️ Next up: **Day 04: iptables Part 1 — tables, chains & basic rules**
