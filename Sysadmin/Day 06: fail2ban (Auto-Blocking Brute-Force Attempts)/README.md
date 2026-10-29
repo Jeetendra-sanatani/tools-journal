@@ -233,4 +233,4 @@ A tool that "didn't work" can teach more than one that does. fail2ban was instal
 
 ---
 
-⬅️ [Back to Sysadmin index](../README.md) | ➡️ Next up: **Day 07: logrotate — log rotation & retention**
+⬅️ [Back to Sysadmin index](../Sysadmin) | ➡️ Next up: **Day 07: logrotate — log rotation & retention**
