@@ -51,7 +51,7 @@ pie showData
 | Metric | Value |
 | --- | --- |
 | 📅 Phases planned | **5** |
-| 🎯 Current phase | **Pentesting** |
+| 🎯 Current phase | **Cloud / DevOps** |
 | 🗓️ Total days planned | **~80** |
 | 🧪 Practical focus | **80%** |
 | 🚦 Status | **In Progress** |
@@ -71,7 +71,7 @@ flowchart LR
     style A fill:#2ea043,color:#fff
     style B fill:#2ea043,color:#fff
     style C fill:#2ea043,color:#fff
-    style D fill:#30363d,color:#8b949e
+    style D fill:#2ea043,color:#fff
     style E fill:#30363d,color:#8b949e
 ```
 
@@ -139,8 +139,8 @@ Each tool's folder contains:
 | --- | --- | --- |
 | 1. Networking | ✅ Completed | [Networking/](./Networking/) |
 | 2. Sysadmin | ✅ Completed | [Sysadmin/](./Sysadmin/) |
-| 3. Pentesting | 🔵 In Progress | [Pentesting/](./Pentesting/) |
-| 4. Cloud / DevOps | ⏳ Upcoming | — |
+| 3. Pentesting | ✅ Completed | [Pentesting/](./Pentesting/) |
+| 4. Cloud / DevOps | 🔵 In Progress | [Cloud / DevOps/](./Cloud/DevOps/) |
 | 5. Git Advanced | ⏳ Upcoming | — |
 
 ---
