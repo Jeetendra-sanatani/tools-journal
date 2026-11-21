@@ -71,7 +71,7 @@ flowchart LR
     style A fill:#2ea043,color:#fff
     style B fill:#2ea043,color:#fff
     style C fill:#2ea043,color:#fff
-    style D fill:#2ea043,color:#fff
+    style D fill:#2ea043,color:#87CEEB
     style E fill:#30363d,color:#8b949e
 ```
 
