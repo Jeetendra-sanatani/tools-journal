@@ -185,7 +185,7 @@ $ aws-emulator
 ```
 This is a **completely separate tool** from the Docker-based LocalStack container worked through above — a different binary (`aws-emulator`), a different port (**9297**, not 4566), **HTTPS** instead of HTTP, and its own credentials file. It wasn't part of today's Docker troubleshooting at all, and its origin on this machine isn't yet clear — it may be a bundled component of a newer LocalStack release, or an unrelated pre-existing tool.
 
-![A second, unexplained local AWS emulator on a different port](Screenshots/02-aws-emulator-mystery.png)
+![A second, unexplained local AWS emulator on a different port](Screenshots/02-localstack-start.png)
 
 ---
 
