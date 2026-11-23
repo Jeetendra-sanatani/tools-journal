@@ -1,0 +1,50 @@
+==========================================
+CLOUD/DEVOPS DAY 01 — LOCALSTACK + AWS CLI
+Commands Reference Sheet
+(Everything local — no AWS account, no cost, no real cloud risk)
+==========================================
+
+--- INSTALL ---
+pip install localstack --break-system-packages
+sudo apt install awscli -y
+
+--- START / STOP / STATUS ---
+localstack start -d              # start in background (Docker)
+localstack stop                  # stop it
+localstack status services       # which AWS services are emulated and running
+docker ps                        # confirm the container is actually up
+
+--- AWS CLI CONFIG (dummy creds — LocalStack doesn't check them) ---
+aws configure
+  Access Key ID: test
+  Secret Access Key: test
+  Region: us-east-1
+  Output: json
+
+--- SHORTCUT ALIAS (avoid retyping --endpoint-url every time) ---
+alias awslocal='aws --endpoint-url=http://localhost:4566'
+
+--- S3 ---
+awslocal s3 mb s3://<bucket-name>              # make a bucket
+awslocal s3 ls                                  # list buckets
+awslocal s3 cp <file> s3://<bucket-name>/        # upload
+awslocal s3 cp s3://<bucket-name>/<file> .       # download
+awslocal s3 ls s3://<bucket-name>/               # list bucket contents
+awslocal s3 rb s3://<bucket-name> --force        # delete bucket + contents
+
+--- IAM ---
+awslocal iam create-user --user-name <name>
+awslocal iam list-users
+awslocal iam attach-user-policy --user-name <name> --policy-arn <policy-arn>
+awslocal iam list-attached-user-policies --user-name <name>
+awslocal iam detach-user-policy --user-name <name> --policy-arn <policy-arn>
+awslocal iam delete-user --user-name <name>
+
+--- COMMON AWS-MANAGED POLICY ARNs (work in LocalStack too) ---
+arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+arn:aws:iam::aws:policy/AmazonS3FullAccess
+arn:aws:iam::aws:policy/IAMReadOnlyAccess
+
+==========================================
+END OF CLOUD/DEVOPS DAY 01 COMMAND SHEET
+==========================================
