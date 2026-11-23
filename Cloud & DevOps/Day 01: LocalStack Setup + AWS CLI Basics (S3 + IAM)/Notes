@@ -1,0 +1,43 @@
+==========================================
+CLOUD/DEVOPS DAY 01 NOTES — LocalStack + AWS CLI
+Date: 23-11-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- LocalStack emulates AWS services (S3, IAM, and more) in a local Docker container
+- Same aws CLI commands as real AWS; only --endpoint-url differs
+- No AWS account, no credit card, no real cost or risk - fully local
+- Dummy credentials ("test"/"test") work because LocalStack doesn't validate them
+- S3 = object storage (buckets + objects); IAM = users/permissions
+
+COMMANDS I PRACTICED:
+[ ] localstack start -d  /  localstack status services
+[ ] aws configure  (dummy creds)
+[ ] awslocal s3 mb s3://day01-test-bucket
+[ ] awslocal s3 cp test-file.txt s3://day01-test-bucket/
+[ ] awslocal s3 cp s3://day01-test-bucket/test-file.txt downloaded/
+[ ] awslocal iam create-user --user-name day01-practice-user
+[ ] awslocal iam attach-user-policy ...
+
+paste your real output here :
+$ localstack status services
+> 
+
+$ awslocal s3 ls
+> 
+
+
+MY OBSERVATIONS:
+- Docker already running or needed starting: 
+- LocalStack / AWS CLI versions: 
+- Services listed as available: 
+- Did the downloaded file match the uploaded one: 
+- IAM user + policy attachment result: 
+- Why never use root for daily work, based on today: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+
+TOMORROW'S TOPIC: Cloud/DevOps Day 02 — 
+==========================================
