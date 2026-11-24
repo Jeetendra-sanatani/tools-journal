@@ -1,0 +1,43 @@
+==========================================
+CLOUD/DEVOPS DAY 02 NOTES — EC2/VPC Concepts + DynamoDB
+Date: 24-11-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- LocalStack Community does NOT emulate EC2 (Pro-only) - EC2/VPC covered as theory today
+- EC2 instance = a virtual server; AMI = the template/image it's built from; instance type = its size/specs
+- VPC = isolated virtual network; subnets split it into public/private zones
+- Security Groups are STATEFUL instance-level firewalls (return traffic auto-allowed)
+- DynamoDB (NoSQL) IS supported in LocalStack Community - full hands-on done
+- DynamoDB table/item roughly maps to a SQL table/row, but schema-less per item
+
+COMMANDS I PRACTICED:
+[ ] docker run ... -e SERVICES=s3,iam,dynamodb ...
+[ ] awslocal dynamodb create-table ...
+[ ] awslocal dynamodb put-item / get-item
+[ ] awslocal dynamodb scan
+[ ] awslocal dynamodb delete-table
+
+paste your real output here :
+$ awslocal dynamodb get-item --table-name Day02Practice --key '{"id": {"S": "item1"}}'
+> 
+
+
+MY OBSERVATIONS:
+- Was DynamoDB already enabled or needed a restart: 
+- AMI vs instance, in my own words: 
+- What happens to your AWS bill if you forget to stop an EC2 instance: 
+- Why a database sits in a private subnet vs a web server in a public one: 
+- Did get-item match exactly what was put in: 
+- Did the table disappear from list-tables after delete: 
+- Why EC2/VPC stayed theory while DynamoDB got hands-on: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Cloud/DevOps Day 03 — 
+==========================================
