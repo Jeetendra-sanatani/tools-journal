@@ -299,4 +299,4 @@ Day 02 showed the payoff of Day 01's troubleshooting: a clean, fully working ses
 
 ---
 
-⬅️ [Back to Cloud/DevOps index](/Cloud & Devops) | ➡️ Next up: **Cloud/DevOps Day 03**
+⬅️ [Back to Cloud/DevOps index](/Cloud ) | ➡️ Next up: **Cloud/DevOps Day 03**
