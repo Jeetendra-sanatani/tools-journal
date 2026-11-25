@@ -1,0 +1,45 @@
+==========================================
+CLOUD/DEVOPS DAY 03 NOTES — IAM Policies, Roles, Least Privilege
+Date: 25-11-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- A policy's Action + Resource together define exactly what's allowed - narrow is safer
+- "Action": "*", "Resource": "*" is the textbook overly-permissive red flag
+- A custom policy (create-policy + attach) is different from attaching an AWS-managed policy ARN
+- An IAM role is assumed (by a service, another account, or a user), not logged into directly like a user
+- A role's trust policy (Principal) controls WHO is allowed to assume it - that's the real access control
+- Least privilege = only the specific actions + specific resources actually needed, nothing broader
+
+COMMANDS I PRACTICED:
+[ ] awslocal iam create-policy --policy-document file://least-privilege-policy.json
+[ ] awslocal iam create-user + attach-user-policy (least privilege)
+[ ] awslocal iam create-policy --policy-document file://overly-permissive-policy.json
+[ ] awslocal iam create-user + attach-user-policy (overly permissive)
+[ ] awslocal iam create-role --assume-role-policy-document file://trust-policy.json
+
+paste your real output here :
+$ awslocal iam list-attached-user-policies --user-name day03-least-priv-user
+> 
+
+$ awslocal iam list-roles
+> 
+
+
+MY OBSERVATIONS:
+- What the least-privilege policy actually permits vs forbids: 
+- PolicyArn LocalStack assigned my custom policy: 
+- What the overly-permissive user can do that the least-privilege user can't: 
+- How I'd flag "Action: s3:*, Resource: *" if found on a real audit: 
+- What a role's trust policy Principal actually controls: 
+- IAM user vs IAM role, in my own words: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Cloud/DevOps Day 04 — 
+==========================================
