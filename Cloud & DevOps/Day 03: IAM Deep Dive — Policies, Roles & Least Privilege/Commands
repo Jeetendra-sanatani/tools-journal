@@ -1,0 +1,44 @@
+==========================================
+CLOUD/DEVOPS DAY 03 — IAM POLICIES, ROLES, LEAST PRIVILEGE
+Commands Reference Sheet
+==========================================
+
+--- CREATE A CUSTOM POLICY FROM A JSON FILE ---
+awslocal iam create-policy \
+  --policy-name <name> \
+  --policy-document file://<path-to-policy.json>
+
+--- ATTACH / DETACH A POLICY (custom OR AWS-managed ARN) ---
+awslocal iam attach-user-policy --user-name <user> --policy-arn <arn>
+awslocal iam detach-user-policy --user-name <user> --policy-arn <arn>
+awslocal iam list-attached-user-policies --user-name <user>
+
+--- LIST / INSPECT POLICIES ---
+awslocal iam list-policies --scope Local       # only your own custom policies, not AWS-managed ones
+awslocal iam get-policy --policy-arn <arn>
+awslocal iam get-policy-version --policy-arn <arn> --version-id v1
+
+--- IAM ROLES ---
+awslocal iam create-role \
+  --role-name <name> \
+  --assume-role-policy-document file://trust-policy.json
+
+awslocal iam list-roles
+awslocal iam attach-role-policy --role-name <name> --policy-arn <arn>
+awslocal iam delete-role --role-name <name>
+
+--- CLEANUP (good habit, even locally) ---
+awslocal iam detach-user-policy --user-name <user> --policy-arn <arn>
+awslocal iam delete-user --user-name <user>
+awslocal iam delete-policy --policy-arn <arn>
+
+--- POLICY JSON ANATOMY ---
+Version     -> always "2012-10-17" (the IAM policy language version, not a date to change)
+Effect      -> "Allow" or "Deny"
+Action      -> which API calls this applies to (e.g. "s3:GetObject", or "s3:*" for all S3 actions)
+Resource    -> which specific resource ARN(s) this applies to (or "*" for all resources - a red flag)
+Principal   -> (trust policies only) WHO/WHAT is allowed to assume a role
+
+==========================================
+END OF CLOUD/DEVOPS DAY 03 COMMAND SHEET
+==========================================
