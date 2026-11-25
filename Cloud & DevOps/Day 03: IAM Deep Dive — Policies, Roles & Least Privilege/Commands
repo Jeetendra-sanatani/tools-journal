@@ -1,0 +1,40 @@
+==========================================
+PENTESTING DAY 03 — BURP SUITE PART 1
+Intercepting Proxy Basics
+==========================================
+
+--- LAUNCHING BURP ---
+burpsuite &                          # or: Applications > 03 - Web Application Analysis > burpsuite
+   Temporary project -> Use Burp defaults -> Start Burp
+
+--- BROWSER SETUP ---
+Proxy tab -> "Open Browser"            # Burp's own pre-configured browser, easiest option
+   -- OR, for your regular Firefox --
+Firefox Settings -> Network Settings -> Manual proxy configuration
+   HTTP Proxy: 127.0.0.1   Port: 8080   [x] Also use this proxy for HTTPS
+Visit http://burp in the proxied browser to install Burp's CA cert (needed for HTTPS later)
+
+--- THE PROXY TAB ---
+Intercept tab           shows ONE request at a time, paused, waiting for Forward/Drop
+  Forward                 let this one request through unchanged
+  Drop                     kill this request, nothing reaches the server
+  (edit the raw request text directly before forwarding - this is the core "intercept and modify" workflow)
+HTTP history tab         a log of EVERY request/response that passed through, intercepted or not
+
+--- REPEATER ---
+Right-click any request (in history or while intercepted) -> "Send to Repeater"
+  Edit anything in the request, click Send, see the response - repeat as many times as needed,
+  without touching the browser at all. The main tool for "let me just try this one variation."
+
+--- TARGET FOR TODAY ---
+http://testphp.vulnweb.com/            # Acunetix's public test site (same family as Day 03
+                                        # Networking's testaspnet.vulnweb.com) - permitted to test
+
+--- KEY CONCEPT ---
+A browser only ever sends what its UI lets you construct. A proxy sits BETWEEN browser and
+server and lets you see and change the ACTUAL bytes before they leave - this is how you test
+"what if this parameter were something the browser would never normally let me type."
+
+==========================================
+END OF PENTESTING DAY 03 COMMAND SHEET
+==========================================
