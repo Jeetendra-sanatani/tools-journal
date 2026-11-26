@@ -1,0 +1,45 @@
+==========================================
+CLOUD/DEVOPS DAY 04 NOTES — Lambda Functions
+Date: 26-11-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- Lambda runs code without me managing a server - but a server still exists, AWS just hides it
+- Code must be zipped before upload; --handler tells Lambda which file.function to call first
+- event = the input data passed to the function (from --payload here, or a trigger on real AWS)
+- A Lambda function needs an IAM role (reused Day 03's Day03LambdaExecutionRole) to actually run
+- invoke can be tested repeatedly with different payloads without redeploying anything
+- Log groups are created automatically per function for debugging
+
+COMMANDS I PRACTICED:
+[ ] zip function.zip handler.py
+[ ] awslocal lambda create-function --role arn:...Day03LambdaExecutionRole
+[ ] awslocal lambda invoke --payload '{"name": "..."}' response.json
+[ ] awslocal logs describe-log-groups
+[ ] awslocal lambda delete-function
+
+paste your real output here :
+$ awslocal lambda invoke --function-name Day04HelloFunction --payload '{"name": "Cloud Day 4"}' --cli-binary-format raw-in-base64-out response.json
+$ cat response.json
+> 
+
+
+MY OBSERVATIONS:
+- Did Day 03's role still exist and work for this function: 
+- What --handler handler.lambda_handler actually means: 
+- Function state after create (Active/Pending): 
+- Did the first invoke's response include "Cloud Day 4": 
+- What the empty-payload invoke returned, and why: 
+- Log group name created for this function: 
+- Did the function disappear from list-functions after delete: 
+- Why "serverless" is a bit misleading, in my own words: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Cloud/DevOps Day 05 — 
+==========================================
