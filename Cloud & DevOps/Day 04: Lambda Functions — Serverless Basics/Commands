@@ -1,0 +1,50 @@
+==========================================
+CLOUD/DEVOPS DAY 04 — LAMBDA FUNCTIONS
+Commands Reference Sheet
+==========================================
+
+--- PACKAGE CODE ---
+zip function.zip handler.py          # Lambda needs a zip, not a bare .py file
+
+--- CREATE A FUNCTION ---
+awslocal lambda create-function \
+  --function-name <name> \
+  --runtime python3.12 \
+  --handler <filename-without-.py>.<function-name> \
+  --zip-file fileb://function.zip \
+  --role arn:aws:iam::000000000000:role/<role-name>
+
+--- LIST / INSPECT ---
+awslocal lambda list-functions
+awslocal lambda get-function --function-name <name>
+awslocal lambda get-function-configuration --function-name <name>
+
+--- INVOKE ---
+awslocal lambda invoke \
+  --function-name <name> \
+  --payload '{"key": "value"}' \
+  --cli-binary-format raw-in-base64-out \
+  output.json
+cat output.json
+
+--- UPDATE CODE (after editing handler.py and re-zipping) ---
+awslocal lambda update-function-code \
+  --function-name <name> \
+  --zip-file fileb://function.zip
+
+--- LOGS ---
+awslocal logs describe-log-groups
+awslocal logs describe-log-streams --log-group-name /aws/lambda/<name>
+awslocal logs get-log-events --log-group-name /aws/lambda/<name> --log-stream-name <stream>
+
+--- CLEANUP ---
+awslocal lambda delete-function --function-name <name>
+
+--- KEY CONCEPTS ---
+event     -> the JSON input passed via --payload (or from whatever triggers the function on real AWS)
+context   -> runtime info (request ID, time remaining, etc.) - not used much in simple functions
+handler   -> "<file>.<function>" - tells Lambda which function, in which file, to call first
+
+==========================================
+END OF CLOUD/DEVOPS DAY 04 COMMAND SHEET
+==========================================
