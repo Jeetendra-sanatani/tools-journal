@@ -1,0 +1,45 @@
+==========================================
+CLOUD/DEVOPS DAY 05 NOTES — S3 Security Misconfigurations
+Date: 27-11-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- A bucket policy with Principal:* + s3:GetObject + Resource:bucket/* makes every object publicly readable
+- This exact pattern is behind most real-world "exposed S3 bucket" data breaches
+- No AWS credentials are needed to exploit it - a plain curl/HTTP request is enough
+- Removing the bucket policy immediately blocks the access again
+- Real AWS has a separate "Block Public Access" setting as an extra safety net, independent of policies
+- This is the auditor's mindset: look for Principal:* in bucket policies as the red flag
+
+COMMANDS I PRACTICED:
+[ ] awslocal s3 mb + s3 cp (create bucket, upload file)
+[ ] awslocal s3api put-bucket-policy (the misconfiguration)
+[ ] curl http://localhost:4566/<bucket>/<file> (unauthenticated access test)
+[ ] awslocal s3api delete-bucket-policy (the fix)
+[ ] curl again to confirm access is blocked
+
+paste your real output here :
+$ curl http://localhost:4566/day05-sensitive-bucket/sensitive-data.txt   (BEFORE the fix)
+> 
+
+$ curl -i http://localhost:4566/day05-sensitive-bucket/sensitive-data.txt   (AFTER the fix)
+> 
+
+
+MY OBSERVATIONS:
+- Was the bucket private by default before the policy was applied: 
+- What Principal: * actually grants, in my own words: 
+- Did the unauthenticated curl return the file contents before the fix: 
+- What curl returned after removing the policy (status code/error): 
+- What real AWS setting exists as an extra safety net (Block Public Access): 
+- Who could have accessed this if it were a real public bucket: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Cloud/DevOps Day 06 — 
+==========================================
