@@ -1,0 +1,37 @@
+==========================================
+CLOUD/DEVOPS DAY 05 — S3 SECURITY MISCONFIGURATIONS
+Commands Reference Sheet
+==========================================
+
+--- BUCKET BASICS ---
+awslocal s3 mb s3://<bucket-name>
+awslocal s3 cp <file> s3://<bucket-name>/
+awslocal s3 ls s3://<bucket-name>/
+
+--- BUCKET POLICY (the misconfiguration lives here) ---
+awslocal s3api put-bucket-policy --bucket <bucket-name> --policy file://policy.json
+awslocal s3api get-bucket-policy --bucket <bucket-name>
+awslocal s3api delete-bucket-policy --bucket <bucket-name>
+
+--- THE DANGEROUS PATTERN TO RECOGNIZE ---
+"Principal": "*"            # anyone, no authentication required
+"Action": "s3:GetObject"    # read access to objects
+"Resource": "<bucket>/*"    # applies to every object in the bucket
+# all three together = anyone on the internet can read every file in the bucket
+
+--- TESTING "AS AN ATTACKER" (no AWS credentials at all) ---
+curl http://localhost:4566/<bucket-name>/<object-key>
+curl -i http://localhost:4566/<bucket-name>/<object-key>   # -i shows the HTTP status code too
+
+--- REAL AWS: BLOCK PUBLIC ACCESS (account/bucket-level safety net) ---
+# aws s3api put-public-access-block --bucket <bucket-name> --public-access-block-configuration \
+#   BlockPublicAcls=true,IgnorePublicAcls=true,BlockPublicPolicy=true,RestrictPublicBuckets=true
+# (this setting exists on real AWS as an extra safety net, separate from bucket policies)
+
+--- CHECKING FOR THIS MISCONFIGURATION (the auditor's angle) ---
+awslocal s3api get-bucket-policy --bucket <bucket-name> 2>&1 | grep -i '"Principal": "\*"'
+awslocal s3api get-bucket-policy-status --bucket <bucket-name>   # real AWS: tells you if a bucket IS public
+
+==========================================
+END OF CLOUD/DEVOPS DAY 05 COMMAND SHEET
+==========================================
