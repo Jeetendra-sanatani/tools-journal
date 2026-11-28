@@ -1,0 +1,42 @@
+==========================================
+CLOUD/DEVOPS DAY 06 NOTES — S3 Event-Driven Lambda
+Date: 28-11-2026
+==========================================
+
+WHAT I LEARNED TODAY:
+- A bucket can be wired to automatically call a Lambda function on object events (no manual invoke)
+- Three pieces are needed: the function, add-permission (letting S3 call it), and the bucket
+  notification configuration (saying which events trigger it)
+- The event payload (Records[].s3.bucket.name / .object.key) is built by S3 itself, not by me
+- Reused Day 03's IAM role again - the same role works across different Lambda functions
+- This is the standard "upload triggers processing" serverless pattern used in real AWS architectures
+
+COMMANDS I PRACTICED:
+[ ] awslocal lambda create-function (reusing Day03LambdaExecutionRole)
+[ ] awslocal lambda add-permission --principal s3.amazonaws.com
+[ ] awslocal s3api put-bucket-notification-configuration
+[ ] awslocal s3 cp <file> s3://bucket/   (the trigger itself)
+[ ] awslocal logs describe-log-streams / get-log-events (proof it ran)
+
+paste your real output here :
+$ awslocal s3 cp trigger-test.txt s3://day06-trigger-bucket/
+$ (log output showing the print() line)
+> 
+
+
+MY OBSERVATIONS:
+- Did Day 03's role work again for this new function: 
+- What add-permission actually does, in my own words: 
+- Event type subscribed to, and other event types that exist: 
+- Did the log show the actual bucket/key WITHOUT manual invoke: 
+- Manual invoke (Day 04) vs automatic trigger (today) - the real difference: 
+
+
+CONFIDENCE IN THIS TOPIC (1-5): ___
+
+MISTAKES / ERRORS YOU HIT TODAY:
+- 
+
+
+TOMORROW'S TOPIC: Cloud/DevOps Day 07 — 
+==========================================
