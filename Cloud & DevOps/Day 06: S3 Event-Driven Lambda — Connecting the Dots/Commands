@@ -1,0 +1,49 @@
+==========================================
+CLOUD/DEVOPS DAY 06 — S3 EVENT-DRIVEN LAMBDA
+Commands Reference Sheet
+==========================================
+
+--- PACKAGE AND CREATE THE FUNCTION (same as Day 04) ---
+zip trigger_function.zip trigger_handler.py
+awslocal lambda create-function \
+  --function-name <name> --runtime python3.12 \
+  --handler <file>.<function> --zip-file fileb://trigger_function.zip \
+  --role arn:aws:iam::000000000000:role/<role-name>
+
+--- GET A FUNCTION'S ARN ---
+awslocal lambda get-function --function-name <name> --query 'Configuration.FunctionArn' --output text
+
+--- ALLOW S3 TO INVOKE THE FUNCTION ---
+awslocal lambda add-permission \
+  --function-name <name> \
+  --statement-id <any-unique-id> \
+  --action lambda:InvokeFunction \
+  --principal s3.amazonaws.com \
+  --source-arn arn:aws:s3:::<bucket-name>
+
+--- WIRE THE BUCKET'S NOTIFICATION TO THE FUNCTION ---
+awslocal s3api put-bucket-notification-configuration \
+  --bucket <bucket-name> \
+  --notification-configuration file://notification.json
+# notification.json: {"LambdaFunctionConfigurations":[{"LambdaFunctionArn":"<func-arn>","Events":["s3:ObjectCreated:*"]}]}
+
+--- CHECK / REMOVE THE NOTIFICATION ---
+awslocal s3api get-bucket-notification-configuration --bucket <bucket-name>
+awslocal s3api put-bucket-notification-configuration --bucket <bucket-name> --notification-configuration '{}'
+
+--- TRIGGER IT (just upload - no manual invoke) ---
+awslocal s3 cp <file> s3://<bucket-name>/
+
+--- CHECK LOGS FOR PROOF IT RAN ---
+awslocal logs describe-log-groups
+awslocal logs describe-log-streams --log-group-name /aws/lambda/<function-name>
+awslocal logs get-log-events --log-group-name /aws/lambda/<function-name> --log-stream-name <stream>
+
+--- COMMON S3 EVENT TYPES ---
+s3:ObjectCreated:*      # Put, Post, Copy, or multipart upload completion
+s3:ObjectRemoved:*      # delete
+s3:ObjectRestore:*      # restore from Glacier
+
+==========================================
+END OF CLOUD/DEVOPS DAY 06 COMMAND SHEET
+==========================================
